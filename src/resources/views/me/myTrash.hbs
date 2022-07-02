@@ -1,0 +1,128 @@
+<div class="container border rounded mt-2">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#Stt</th>
+                <th scope="col">Course name</th>
+                <th scope="col">Course discription</th>
+                <th scope="col">Course image</th>
+                <th scope="col">Course videoId</th>
+                <th scope="col">Course lever</th>
+                <th scope="col">Course time add</th>
+                <th scope="col">Course time delete</th>
+                <th scope="col">Course delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each courses}}
+            <tr>
+                {{!-- sum này được viết ở index góc của ứng dụng --}}
+                <th scope="row">{{sum @index 1}}</th>
+                <td>{{ this.name }}</td>
+                <td>{{ this.discription }}</td>
+                <td>
+                    <img src="{{ this.image }}" alt="">
+                </td>
+                <td>
+                    <iframe width="160" height="94" src="https://www.youtube.com/embed/{{ this.videoId }}"
+                        title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </td>
+                <td>{{ this.level }}</td>
+                <td>{{ this.createdAt }}</td>
+                <td>{{ this.deletedAt }}</td>
+                <td>
+                    <a class="btn btn-danger border w-100" data-bs-id="{{ this._id }}" data-bs-toggle="modal"
+                        data-bs-target="#exampleModalDelete">Delete</a>
+                </td>
+                <td>
+                    <a class="btn btn-warning border w-100" data-bs-id="{{ this._id }}" data-bs-toggle="modal"
+                        data-bs-target="#exampleModal">Restore</a>
+                </td>
+            </tr>
+            {{ else }}
+            <tr>
+                <td colspan="9" class="text-danger text-center">There are no courses deleted available.</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Restore course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form class="form" method="POST" action="">
+                <div class="modal-body">
+                    <input type="hidden">
+                    Do you want do it ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">No restore</button>
+                    <button type="submit" class="btn btn-danger">Restore</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal delete trash -->
+<div class="modal fade" id="exampleModalDelete" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete trash course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form class="formDeleteTrash" method="POST" action="">
+                <div class="modal-body">
+                    <input type="hidden">
+                    Do you want do it ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">No delete</button>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var exampleModal = document.getElementById('exampleModal')
+    exampleModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var recipient = button.getAttribute('data-bs-id')
+        var modalTitle = exampleModal.querySelector('.modal-title')
+        var modalBodyInput = exampleModal.querySelector('.modal-body input')
+        var form = exampleModal.querySelector('.form')
+
+        modalTitle.textContent = 'Restore course - ' + recipient
+        modalBodyInput.value = recipient
+        form.action = "/courses/" + recipient + "/restore?_method=PATCH"
+    })
+</script>
+
+
+{{!-- delete trash coures --}}
+<script>
+    var exampleModalDelete = document.getElementById('exampleModalDelete')
+    exampleModalDelete.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var recipient = button.getAttribute('data-bs-id')
+        var modalTitle = exampleModalDelete.querySelector('.modal-title')
+        var modalBodyInput = exampleModalDelete.querySelector('.modal-body input')
+        var form = exampleModalDelete.querySelector('.formDeleteTrash')
+
+        modalTitle.textContent = 'Delete trash - ' + recipient
+        modalBodyInput.value = recipient
+        form.action = "/courses/" + recipient + "/deletetrash?_method=DELETE"
+    })
+</script>

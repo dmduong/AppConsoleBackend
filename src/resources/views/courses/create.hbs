@@ -1,0 +1,27 @@
+<div class="mt-3 d-flex justify-content-center">
+    {{ errors }}
+    <form class="border rounded w-50 p-3" method="post" action="store">
+        <h4 class="text-center text-success">Add course in system</h4>
+        <div class="mb-3">
+            <label for="courseName" class="form-label">Course name</label>
+            <input type="text" name="name" class="form-control" id="courseName">
+        </div>
+        <div class="mb-3">
+            <label for="discription" class="form-label">Course discription</label>
+            <input type="text" name="discription" class="form-control" id="discription">
+        </div>
+        <div class="mb-3">
+            <label for="video" class="form-label">Course video</label>
+            <input type="text" name="videoId" class="form-control" id="video">
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Course image</label>
+            <input type="text" name="image" class="form-control" id="image">
+        </div>
+        <div class="mb-3">
+            <label for="leve" class="form-label">Course leve</label>
+            <input type="text" name="level" class="form-control" id="leve">
+        </div>
+        <button type="submit" class="btn btn-warning">Add one</button>
+    </form>
+</div>

@@ -1,0 +1,188 @@
+<form action="/courses/actionmulti" id="changeForm" method="post">
+    <div class="container mt-2 p-0">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active font-weight-bold" aria-current="page">Trash course (<span
+                        class="p-1 text-danger">{{
+                        this.countCoursesTrash
+                        }}</span>)</li>
+            </ol>
+        </nav>
+
+        <div style="display: flex; justify-content: start; align-items: center;">
+            <div class="border rounded" style="padding: 5px; margin-right: 3px;">
+                <div class="form-check">
+                    <input class="form-check-input" onclick="toggle(this);" type="checkbox" value="" id="flexCheckAll">
+                    <label class="form-check-label" for="flexCheckAll">
+                        Select all
+                    </label>
+                </div>
+            </div>
+            <div>
+                <select class="form-select" required="true" name="actionName" aria-label="Default select example">
+                    <option value="noAction" selected>Select action</option>
+                    <option value="delete">Delete</option>
+                    <option value="else">Else</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" disabled id="openButton" class="btn btn-default border-success rounded"
+                    style="margin-left: 3px;">
+                    Action
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{!-- {{ _sort.type }} _sort này do trong middleware truyền ra --}}
+    <div class="container border rounded mt-2">
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        Select
+                    </th>
+                    <th scope="col">Code {{{ sortable '_id' _sort }}}</th>
+                    <th scope="col">Course name
+                        {{{ sortable 'name' _sort }}}
+                        {{!-- <a href="?_sort&column=name&type=desc">
+                            <span class="sort-search"><i class="fa-solid fa-sort"></i></span>
+                        </a> --}}
+                    </th>
+                    <th scope="col">Course discription</th>
+                    <th scope="col">Course image</th>
+                    <th scope="col">Course videoId</th>
+                    <th scope="col">Course lever
+                        {{{ sortable 'level' _sort }}}
+                    </th>
+                    <th scope="col">Course time add
+                        {{{ sortable 'createdAt' _sort }}}
+                    </th>
+                    <th scope="col">Course edit</th>
+                    <th scope="col">Course delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each courses}}
+                <tr>
+                    <td>
+                        <div class="form-check">
+                            <input onclick="check(this);" class="form-check-input" type="checkbox"
+                                value="{{ this._id }}" name="_id[]">
+                        </div>
+                    </td>
+                    {{!-- sum này được viết ở index góc của ứng dụng --}}
+                    {{!-- {{sum @index 1}} --}}
+                    <th scope="row"> {{ this._id }}</th>
+                    <td>{{ this.name }}</td>
+                    <td>{{ this.discription }}</td>
+                    <td>
+                        <img src="{{ this.image }}" alt="">
+                    </td>
+                    <td>
+                        <iframe width="160" height="94" src="https://www.youtube.com/embed/{{ this.videoId }}"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </td>
+                    <td>{{ this.level }}</td>
+                    <td>{{ this.createdAt }}</td>
+                    <td>
+                        <a class="btn btn-warning border w-100" href="/courses/{{ this._id }}/edit">Edit</a>
+                    </td>
+                    <td>
+                        <a class="btn btn-danger border w-100" data-bs-id="{{ this._id }}" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal">Trash</a>
+                    </td>
+                </tr>
+                {{ else }}
+                <tr>
+                    <td colspan="9" class="text-danger text-center">There are no courses available. <a
+                            href="/courses/create">Create new course</a></td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Move to trash course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form class="form" method="POST" action="">
+                <div class="modal-body">
+                    <input type="hidden">
+                    Do you want do it ?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Exit</button>
+                    <button type="submit" class="btn btn-danger">Move</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var exampleModal = document.getElementById('exampleModal')
+    exampleModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var recipient = button.getAttribute('data-bs-id')
+        var modalTitle = exampleModal.querySelector('.modal-title')
+        var modalBodyInput = exampleModal.querySelector('.modal-body input')
+        var form = exampleModal.querySelector('.form')
+
+        modalTitle.textContent = 'Move to trash - ' + recipient
+        modalBodyInput.value = recipient
+        form.action = "/courses/" + recipient + "/delete?_method=DELETE"
+    })
+
+
+</script>
+
+<script>
+    function toggle(source) {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i] != source)
+                checkboxes[i].checked = source.checked;
+        }
+    }
+
+    const count = (value) => {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const boxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        if (boxes.length < checkboxes.length) {
+            const checkall = document.getElementById('flexCheckAll').checked = false;
+        }
+    }
+
+    const check = (value) => {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const boxes = document.querySelectorAll('input[type="checkbox"]:checked');
+
+        if (boxes.length == checkboxes.length - 1) {
+            const checkall = document.getElementById('flexCheckAll').checked = true;
+        } count(value);
+    }
+
+    const form = document.getElementById('changeForm');
+    const event = form.addEventListener("change", (e) => {
+        const boxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+        if (boxes.length > 0) {
+            console.log(boxes.length);
+            document.getElementById('openButton').disabled = false;
+        } else {
+            document.getElementById('openButton').disabled = true;
+        }
+    });
+</script>

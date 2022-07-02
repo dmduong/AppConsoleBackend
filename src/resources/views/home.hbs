@@ -1,0 +1,16 @@
+<div class="container-fluid">
+    <div class="row m-2">
+        {{#each courses}}
+        <div class="col-md-3 mt-1">
+            <div class="card" style="width: 18rem;">
+                <img src="{{this.image}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{this.name}}</h5>
+                    <p class="card-text">{{this.discription}}</p>
+                    <a href="/courses/{{this.slug}}" class="btn btn-warning">Chi tiết</a>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
