@@ -22,7 +22,22 @@ let postUpdateCourseValidation = () => {
     ];
 }
 
+let postTaskValidation = () => {
+    return [
+        check('name', 'Name task isempty!').not().isEmpty(),
+        // check('age', 'Age task isempty!').not().isEmpty(),
+    ];
+};
+
+let updateTaskValidation = () => {
+    return [
+        check('name', 'Name task isempty!').not().isEmpty(),
+    ];
+};
+
 module.exports = {
     postCourseValidation,
-    postUpdateCourseValidation
+    postUpdateCourseValidation,
+    postTaskValidation,
+    updateTaskValidation
 };

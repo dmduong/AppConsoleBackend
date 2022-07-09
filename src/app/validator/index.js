@@ -8,4 +8,6 @@ module.exports = {
     postCourseValidation: validation.postCourseValidation(),
     postUpdateCourseValidation: validation.postUpdateCourseValidation(),
     auth: auth,
+    postTaskValidation: validation.postTaskValidation(),
+    updateTaskValidation: validation.updateTaskValidation()
 }

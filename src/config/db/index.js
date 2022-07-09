@@ -7,7 +7,6 @@ async function connect() {
         await mongoose.connect(process.env.MONGODB_URL);
         console.log('Kết nối thành công với database');
     } catch (error) {
-        console.log(process.env.MONGODB_URL);
         console.log('Không kết nối được với database');
     }
 }

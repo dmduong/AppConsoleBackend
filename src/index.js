@@ -5,8 +5,11 @@ const exphbs = require('express-handlebars');
 const db = require('./config/db/index');
 const methodOverride = require('method-override');
 const SortMiddleware = require('./app/middlewares/SortMiddleware');
+const headerAllows = require('./app/middlewares/HeaderAllows');
+
 const helper = require('./helpers/handlebars');
 const dotenv = require('dotenv');
+const cors = require('cors');
 
 dotenv.config();
 
@@ -14,8 +17,16 @@ dotenv.config();
 db.connect();
 
 const app = express();
-const port = 3000;
+const port = 8000;
 
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true,            //access-control-allow-credentials:true
+    optionSuccessStatus: 200
+}
+
+
+app.use(cors(corsOptions));
 //nhận routes từ file cấu hình route
 const route = require('./routes/index.js');
 
@@ -27,7 +38,7 @@ app.use(methodOverride('_method'));
 
 //Add middleware to pages
 app.use(SortMiddleware);
-
+app.use(headerAllows);
 //midlewere để xử lý lấy dữ liệu post
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -48,5 +59,5 @@ app.set('views', path.join(__dirname, 'resources', 'views'));
 route(app);
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port} - http://127.0.0.1:3000`)
+    console.log(`Example app listening on port ${port} - http://127.0.0.1:8000`)
 })
