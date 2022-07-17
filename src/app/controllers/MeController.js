@@ -69,29 +69,64 @@ class MeController {
     }
 
     async info(req, res, next) {
-        res.json(req.user);
+
+        const { password, ...other } = req.user._doc;
+        res.json({
+            status: 200,
+            messages: "Select information successfylly!",
+            data: { ...other }
+        });
     }
 
     async logout(req, res, next) {
         // Log user out of the application
         try {
-            req.user.tokens = req.user.tokens.filter((token) => {
-                return token.token != req.token
-            })
-            await req.user.save()
-            res.send()
+            const refreshToken = req.header('Cookies').replace('refreshToken=', '');
+
+            if (refreshToken) {
+
+                req.user.tokens = req.user.tokens.filter((token) => {
+                    return token.token != req.token
+                });
+                req.user.refreshTokens = req.user.refreshTokens.filter((refreshTokenNew) => {
+                    return refreshTokenNew.refreshToken != refreshToken;
+                });
+                await req.user.save();
+                res.clearCookie("resfreshToken");
+                res.json({
+                    status: 200,
+                    messages: "Logout successfully!"
+                })
+            } else {
+                return res.json({
+                    status: 401,
+                    messages: "Not refresh token select for user!"
+                });
+            }
         } catch (error) {
-            res.status(500).send(error)
+            res.json({
+                status: 401,
+                messages: "Logout unsuccessfully!"
+            })
         }
     }
 
     async logoutAll(req, res, next) {
         try {
             req.user.tokens.splice(0, req.user.tokens.length);
+            req.user.refreshTokens.splice(0, req.user.refreshTokens.length);
             await req.user.save();
-            res.send();
+            res.clearCookie("resfreshToken");
+            return res.json({
+                status: 200,
+                messages: "Logout all successfully!"
+            })
         } catch (error) {
-            res.status(500).send(error);
+            return res.json({
+                status: 401,
+                error: error,
+                messages: "Logout all unsuccessfully!"
+            })
         }
     }
 }

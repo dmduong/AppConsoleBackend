@@ -33,6 +33,12 @@ const userSchema = mongoose.Schema({
             type: String,
             required: true
         }
+    }],
+    refreshTokens: [{
+        refreshToken: {
+            type: String,
+            required: true
+        }
     }]
 })
 
@@ -42,28 +48,36 @@ userSchema.pre('save', async function (next) {
     if (user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8)
     }
-    next()
+    next();
 })
 
 userSchema.methods.generateAuthToken = async function () {
     // Generate an auth token for the user
     const user = this
-    const token = jwt.sign({ _id: user._id }, process.env.SECRET_KEY)
-    console.log(token);
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_ACCESS_KEY, { expiresIn: "365d" })
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
+}
+
+userSchema.methods.generateAuthRefreshToken = async function () {
+    // Generate an auth token for the user
+    const user = this;
+    const refreshToken = jwt.sign({ _id: user._id }, process.env.JWT_REFRESH_KEY, { expiresIn: "365d" });
+    user.refreshTokens = user.refreshTokens.concat({ refreshToken });
+    await user.save();
+    return refreshToken;
 }
 
 userSchema.statics.findByCredentials = async (email, password) => {
     // Search for a user by email and password.
     const user = await User.findOne({ email })
     if (!user) {
-        throw new Error({ error: 'Invalid login credentials' })
+        throw new Error({ messages: 'Invalid login credentials' })
     }
     const isPasswordMatch = await bcrypt.compare(password, user.password)
     if (!isPasswordMatch) {
-        throw new Error({ error: 'Invalid login credentials' })
+        throw new Error({ messages: 'Invalid login credentials' })
     }
     return user
 }

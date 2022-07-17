@@ -11,8 +11,9 @@ const siteController = require('../app/controllers/SiteController');
 //cấu hình route.
 router.get('/search', siteController.search);
 router.get('/', siteController.index);
-router.post('/register', siteController.register);
-router.post('/login', siteController.login);
+router.post('/register', validate.registerValidation, siteController.register);
+router.post('/login', validate.loginValidation, siteController.login);
+router.post('/refresh-token', siteController.refreshToken);
 
 
 module.exports = router;

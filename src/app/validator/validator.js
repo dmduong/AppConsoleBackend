@@ -35,9 +35,49 @@ let updateTaskValidation = () => {
     ];
 };
 
+let registerValidation = () => {
+    return [
+        check('name', 'Name not is empty!').not().isEmpty(),
+        check('email', 'Email not is empty!').not().isEmpty(),
+        check('password', 'Password not is empty!').not().isEmpty(),
+        check('password', 'Password must be between 4 to 16 characters').isLength({ min: 4, max: 16 }),
+        check('re_password', 're-password not is empty!').not().isEmpty(),
+        check('re_password')    // To delete leading and trailing space
+            .trim()
+
+            // Validate minimum length of password
+            // Optional for this context
+            .isLength({ min: 4, max: 16 })
+
+            // Custom message
+            .withMessage('Password must be between 4 to 16 characters')
+
+            // Custom validation
+            // Validate confirmPassword
+            .custom(async (re_password, { req }) => {
+                const password = req.body.password
+
+                // If password and confirm password not same
+                // don't allow to sign up and throw error
+                if (password !== re_password) {
+                    throw new Error('Passwords must be same')
+                }
+            })
+    ];
+};
+
+let loginValidation = () => {
+    return [
+        check('email', 'Email not is empty!').not().isEmpty(),
+        check('password', 'Password not is empty!').not().isEmpty(),
+    ];
+};
+
 module.exports = {
     postCourseValidation,
     postUpdateCourseValidation,
     postTaskValidation,
-    updateTaskValidation
+    updateTaskValidation,
+    registerValidation,
+    loginValidation
 };

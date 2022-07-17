@@ -6,6 +6,7 @@ const db = require('./config/db/index');
 const methodOverride = require('method-override');
 const SortMiddleware = require('./app/middlewares/SortMiddleware');
 const headerAllows = require('./app/middlewares/HeaderAllows');
+const cookieParser = require('cookie-parser');
 
 const helper = require('./helpers/handlebars');
 const dotenv = require('dotenv');
@@ -15,10 +16,9 @@ dotenv.config();
 
 //Kết nối với database
 db.connect();
-
 const app = express();
 const port = 8000;
-
+app.use(cookieParser());
 const corsOptions = {
     origin: 'http://localhost:3000',
     credentials: true,            //access-control-allow-credentials:true
