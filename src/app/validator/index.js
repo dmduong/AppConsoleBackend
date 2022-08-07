@@ -12,4 +12,12 @@ module.exports = {
     updateTaskValidation: validation.updateTaskValidation(),
     registerValidation: validation.registerValidation(),
     loginValidation: validation.loginValidation(),
+    postCategoryValidation: validation.postCategoryValidation(),
+    updateCategoryValidation: validation.updateCategoryValidation(),
+    postStatusValidation: validation.postStatusValidation(),
+    updateStatusValidation: validation.updateStatusValidation(),
+    updateUnitValidation: validation.updateUnitValidation(),
+    postUnitValidation: validation.postUnitValidation(),
+    updateProductValidation: validation.updateProductValidation(),
+    postProductValidation: validation.postProductValidation(),
 }

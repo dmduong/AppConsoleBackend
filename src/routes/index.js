@@ -3,6 +3,7 @@ const siteRouter = require('./site');
 const coursesRouter = require('./courses');
 const meRouter = require('./me');
 const taskRouter = require('./task');
+const inventory = require('./inventory');
 
 function route(app) {
 
@@ -11,6 +12,7 @@ function route(app) {
     app.use('/news', newsRouter);
     app.use('/api/v1/', siteRouter);
     app.use('/api/v1/task/', taskRouter);
+    app.use('/api/v1/inventory/', inventory);
 }
 
 module.exports = route;

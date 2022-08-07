@@ -73,11 +73,95 @@ let loginValidation = () => {
     ];
 };
 
+let postCategoryValidation = () => {
+    return [
+        check('codeCategory', 'Code category is empty!').not().isEmpty(),
+        check('nameCategory', 'Name category is empty!').not().isEmpty(),
+        check('detailCategory', 'Detail category is empty!').not().isEmpty(),
+        check('status', 'Please select status!').not().isEmpty(),
+    ];
+}
+
+let updateCategoryValidation = () => {
+    return [
+        check('nameCategory', 'Name category is empty!').not().isEmpty(),
+        check('detailCategory', 'Detail category is empty!').not().isEmpty(),
+        check('status', 'Please select status!').not().isEmpty(),
+    ];
+}
+
+let postStatusValidation = () => {
+    return [
+        check('codeStatus', 'Code status is empty!').not().isEmpty(),
+        check('nameStatus', 'Name status is empty!').not().isEmpty(),
+    ];
+}
+
+let updateStatusValidation = () => {
+    return [
+        check('nameStatus', 'Name status is empty!').not().isEmpty(),
+    ];
+}
+
+let postUnitValidation = () => {
+    return [
+        check('codeUnit', 'Code unit is empty!').not().isEmpty(),
+        check('nameUnit', 'Name unit is empty!').not().isEmpty(),
+        check('status', 'Status is empty!').not().isEmpty(),
+        check('detailUnit', 'Detail unit is empty!').not().isEmpty(),
+    ];
+}
+
+let updateUnitValidation = () => {
+    return [
+        check('nameUnit', 'Name unit is empty!').not().isEmpty(),
+        check('status', 'Status is empty!').not().isEmpty(),
+        check('detailUnit', 'Detail unit is empty!').not().isEmpty(),
+    ];
+}
+
+let postProductValidation = () => {
+    return [
+        check('codeProduct', 'CodeProduct is empty!').not().isEmpty(),
+        check('nameProduct', 'NameProduct is empty!').not().isEmpty(),
+        check('amountProduct', 'AmountProduct is empty!').not().isEmpty(),
+        check('detailProduct', 'DetailProduct is empty!').not().isEmpty(),
+        check('priceProduct', 'PriceProduct is empty!').not().isEmpty(),
+        check('priceSellProduct', 'PriceSellProduct is empty!').not().isEmpty(),
+        check('weightProduct', 'WeightProduct is empty!').not().isEmpty(),
+        check('category', 'Category is empty!').not().isEmpty(),
+        check('unit', 'Unit is empty!').not().isEmpty(),
+        check('status', 'Status is empty!').not().isEmpty(),
+    ];
+}
+
+let updateProductValidation = () => {
+    return [
+        check('nameProduct', 'NameProduct is empty!').not().isEmpty(),
+        check('amountProduct', 'AmountProduct is empty!').not().isEmpty(),
+        check('detailProduct', 'DetailProduct is empty!').not().isEmpty(),
+        check('priceProduct', 'PriceProduct is empty!').not().isEmpty(),
+        check('priceSellProduct', 'PriceSellProduct is empty!').not().isEmpty(),
+        check('weightProduct', 'WeightProduct is empty!').not().isEmpty(),
+        check('category', 'Category is empty!').not().isEmpty(),
+        check('unit', 'Unit is empty!').not().isEmpty(),
+        check('status', 'Status is empty!').not().isEmpty(),
+    ];
+}
+
 module.exports = {
     postCourseValidation,
     postUpdateCourseValidation,
     postTaskValidation,
     updateTaskValidation,
     registerValidation,
-    loginValidation
+    loginValidation,
+    postCategoryValidation,
+    updateCategoryValidation,
+    postStatusValidation,
+    updateStatusValidation,
+    updateUnitValidation,
+    postUnitValidation,
+    postProductValidation,
+    updateProductValidation
 };

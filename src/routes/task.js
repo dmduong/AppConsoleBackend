@@ -9,10 +9,10 @@ const validate = require('../app/validator/index');
 const taskController = require('../app/controllers/TaskController');
 
 //cấu hình route.
-router.get('/getAllTask', taskController.getAll);
-router.post('/store', validate.postTaskValidation, taskController.store);
-router.get('/edit/:id', taskController.edit);
-router.put('/update/:id', validate.updateTaskValidation, taskController.update);
-router.delete('/delete/:id', taskController.delete);
+router.get('/getAllTask', [validate.auth], taskController.getAll);
+router.post('/store', [validate.auth, validate.postTaskValidation], taskController.store);
+router.get('/edit/:id', [validate.auth], taskController.edit);
+router.put('/update/:id', [validate.auth, validate.updateTaskValidation], taskController.update);
+router.delete('/delete/:id', [validate.auth], taskController.delete);
 
 module.exports = router;

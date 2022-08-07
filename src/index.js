@@ -31,8 +31,9 @@ app.use(cors(corsOptions));
 const route = require('./routes/index.js');
 
 //chỉnh đường dẫn static
+app.use(express.static('public'))
+console.log(path.join(__dirname, 'public'));
 app.use(express.static(path.join(__dirname, 'public')));
-
 // override with POST having ?_method=DELETE
 app.use(methodOverride('_method'));
 
