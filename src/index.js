@@ -11,6 +11,8 @@ const cookieParser = require('cookie-parser');
 const helper = require('./helpers/handlebars');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const publicPath = path.join(__dirname, 'public');
+const uploadsPath = 'uploads';
 
 dotenv.config();
 
@@ -31,9 +33,8 @@ app.use(cors(corsOptions));
 const route = require('./routes/index.js');
 
 //chỉnh đường dẫn static
-app.use(express.static('public'))
-console.log(path.join(__dirname, 'public'));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(publicPath));
+app.use(express.static(uploadsPath));
 // override with POST having ?_method=DELETE
 app.use(methodOverride('_method'));
 

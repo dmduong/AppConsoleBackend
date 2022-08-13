@@ -34,10 +34,10 @@ router.put('/unit/update/:id', [validate.auth, validate.updateUnitValidation], i
 router.delete('/unit/delete/:id', [validate.auth], inventoryController.deleteUnit);
 
 // Products
-router.post('/product/store', [uploadImages.uploadImages.single('imageProducts'), validate.auth, validate.postProductValidation], inventoryController.storeProduct);
+router.post('/product/store', [uploadImages.uploadImages.array('imageProducts', 12), validate.auth, validate.postProductValidation], inventoryController.storeProduct);
 router.get('/product/getAll', [validate.auth], inventoryController.getAllProduct);
 router.get('/product/:id', [validate.auth], inventoryController.editProduct);
-router.put('/product/update/:id', [validate.auth, validate.updateProductValidation], inventoryController.updateProduct);
+router.put('/product/update/:id', [uploadImages.uploadImages.array('imageProducts', 12), validate.auth, validate.updateProductValidation], inventoryController.updateProduct);
 router.delete('/product/delete/:id', [validate.auth], inventoryController.deleteProduct);
 
 

@@ -25,7 +25,7 @@ class messages {
         }
     }
 
-    async showErrorsValidationsToJson(status, req, res, next) {
+    async showValidations(status, req, res, next) {
 
         if (status == 400) {
             return await validationResult(req);

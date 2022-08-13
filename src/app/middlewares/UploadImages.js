@@ -1,13 +1,13 @@
 const multer = require('multer');
 const path = require('path');
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'src/public/');
+        cb(null, 'uploads/images/products/');
     },
-
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
+    },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -16,7 +16,7 @@ const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
         cb(null, true);
     } else {
-        cb(new Error('I don\'t have a clue!'), false);
+        cb(new Error('Lỗi: Không đúng định dạng hình ảnh!'), false);
     }
 }
 

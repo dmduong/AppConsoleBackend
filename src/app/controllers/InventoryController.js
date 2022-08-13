@@ -3,6 +3,10 @@ const { mongooseToObject, mutipleMongooseToObject } = require('../../util/mongoo
 const mess = require('../../messages/messagesFollowsStatus');
 const upload = require('../middlewares/Auth');
 const Resize = require('../../util/Resize');
+const destination = "/images/products/";
+const multer = require('multer');
+const fs = require("fs");
+const path = require('path');
 
 class InventoryController {
 
@@ -476,24 +480,28 @@ class InventoryController {
 
 
     async storeProduct(req, res, next) {
-        console.log(req.file);
-        console.log(req.body);
+
         try {
             //Xử lý nhập dữ liệu:
-            const errors = await mess.showErrorsValidationsToJson(400, req, res, next);
+            const errors = await mess.showValidations(400, req, res, next);
             if (!errors.isEmpty()) {
-                return res.json({
-                    data: errors.array(),
-                    status: 400,
-                    messages: 'Validations errors!'
+                const info = { data: errors.array(), status: 400, messages: 'Validations errors!' }
+                return res.json(info);
+            }
+
+            // //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
+            const formData = req.body;
+            let imageProduct = [];
+            if (!req.files) {
+                imageProduct = [];
+            } else {
+                const image = req.files;
+                image.map((data, index) => {
+                    imageProduct.push({ nameImage: destination + data.filename });
                 });
             }
 
-            const formData = req.body;
-            const imageProduct = { nameImage: req.file.filename };
-            //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
-            const value = { imageProduct, ...formData };
-            const products = await new Products(value);
+            const products = await new Products({ imageProduct, ...formData });
             await products.save();
 
             return res.json({
@@ -505,7 +513,8 @@ class InventoryController {
         } catch (error) {
             return res.json({
                 status: 503,
-                messages: 'Errors connect server!'
+                messages: 'Create unsuccessfully!',
+                err: error
             });
         }
 
@@ -571,7 +580,7 @@ class InventoryController {
         try {
 
             //Xử lý nhập dữ liệu:
-            const errors = await mess.showErrorsValidationsToJson(400, req, res, next);
+            const errors = await mess.showValidations(400, req, res, next);
             if (!errors.isEmpty()) {
                 return res.json({
                     data: errors.array(),
@@ -581,26 +590,56 @@ class InventoryController {
             }
 
             const productUpdate = await Products.findOne({ _id: req.params.id });
-            if (productUpdate) {
-                const { imageProduct, ...value } = req.body;
-                const items = await Products.updateOne({ _id: req.params.id }, value);
-                await Products.updateOne({ _id: req.params.id }, { $push: { imageProduct: imageProduct } });
-                if (!items) {
 
-                    return res.json({
-                        status: 404,
-                        messages: "Update product uncessesfully!"
-                    });
+            if (productUpdate) {
+                if (!req.files) {
+                    let { ...value } = req.body;
+                    const items = await Products.updateOne({ _id: req.params.id }, value);
+
+                    if (!items) {
+                        return res.json({
+                            status: 404,
+                            messages: "Update product uncessesfully!"
+                        });
+                    } else {
+                        return res.json({
+                            status: 200,
+                            messages: "Update product cessesfully!",
+                            infor: items,
+                            data: await Products.findById(req.params.id)
+                                .populate('status')
+                                .populate('category')
+                                .populate('unit'),
+                        });
+                    }
                 } else {
-                    return res.json({
-                        status: 200,
-                        messages: "Update product cessesfully!",
-                        infor: items,
-                        data: await Products.findById(req.params.id)
-                            .populate('status')
-                            .populate('category')
-                            .populate('unit'),
+                    const image = req.files;
+                    let imageProduct = [];
+                    let { ...value } = req.body;
+                    const items = await Products.updateOne({ _id: req.params.id }, value);
+
+                    image.map((data, index) => {
+                        imageProduct.push({ nameImage: destination + data.filename });
                     });
+                    await Products.updateOne({ _id: req.params.id }, { $push: { imageProduct: imageProduct } });
+
+                    if (!items) {
+                        return res.json({
+                            status: 404,
+                            messages: "Update product uncessesfully!"
+                        });
+                    } else {
+                        return res.json({
+                            status: 200,
+                            messages: "Update product cessesfully!",
+                            infor: items,
+                            data: await Products.findById(req.params.id)
+                                .populate('status')
+                                .populate('category')
+                                .populate('unit'),
+                        });
+                    }
+
                 }
             } else {
                 return res.json({
@@ -611,40 +650,46 @@ class InventoryController {
         } catch (error) {
             res.json({
                 status: 503,
-                messages: 'Update category uncessesfully!'
+                messages: 'eror: ' + error
             });
         }
     }
 
     async deleteProduct(req, res, next) {
         try {
-            const productDelete = await Products.findOne({ _id: req.params.id });
-            if (productDelete) {
-                const items = await Products.deleteOne({ _id: req.params.id });
-
-                if (!items) {
-
-                    return res.json({
-                        status: 404,
-                        messages: "Delete product uncessesfully!"
-                    });
-                } else {
-                    return res.json({
-                        status: 200,
-                        messages: "Delete product cessesfully!",
+            const product = await Products.findOne({ _id: req.params.id });
+            const docs = product._doc;
+            if (docs) {
+                //Delete images
+                if (docs.imageProduct.length > 0) {
+                    docs.imageProduct.map((data, index) => {
+                        fs.exists('uploads' + data.nameImage, function (exists) {
+                            if (exists) {
+                                fs.unlinkSync('uploads' + data.nameImage);
+                            }
+                        });
                     });
                 }
+
+                // //Delete products
+                await Products.deleteOne({ _id: docs._id });
+
+                res.status(200).json({
+                    status: 200,
+                    messages: "Delete product cussesfully!",
+                    data: req.params.id
+                });
+
             } else {
-                return res.json({
+                res.status(404).json({
                     status: 404,
-                    messages: "Delete product uncessesfully!"
+                    messages: "Delete product uncussesfully!",
                 });
             }
-
         } catch (error) {
-            res.status.json({
+            return res.status(503).json({
                 status: 503,
-                messages: 'Errors connect server!'
+                messages: error
             });
         }
     }
