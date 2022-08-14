@@ -521,13 +521,23 @@ class InventoryController {
     }
 
     async getAllProduct(req, res, next) {
+
+        const page = Math.max(0, req.params.page);
+        const limit = req.params.limit;
+
         try {
+            const count = await Products.find({});
             const result = await Products.find({})
+                .limit(limit)
+                .skip(limit * page)
+                .sort({
+                    codeProduct: 'asc'
+                })
                 .populate('status')
                 .populate('category')
                 .populate('unit');
 
-            if (!result) {
+            if (result.length <= 0) {
                 return res.json({
                     status: 404,
                     messages: 'No information of products!'
@@ -536,12 +546,17 @@ class InventoryController {
                 return res.status(200).json({
                     status: 200,
                     messages: 'You have a litle information of products!',
-                    data: result
+                    pagination: {
+                        page: page,
+                        pages: Math.ceil((count.length) / limit),
+                        limit: limit
+                    },
+                    data: result,
                 });
             }
 
         } catch (error) {
-            res.status.json({
+            res.json({
                 status: 503,
                 messages: 'Errors connect server!'
             });
@@ -549,6 +564,7 @@ class InventoryController {
     }
 
     async editProduct(req, res, next) {
+
         try {
             const items = await Products.findById(req.params.id)
                 .populate('status')
@@ -569,7 +585,7 @@ class InventoryController {
             }
 
         } catch (error) {
-            res.status.json({
+            res.json({
                 status: 503,
                 messages: 'Errors connect server!'
             });

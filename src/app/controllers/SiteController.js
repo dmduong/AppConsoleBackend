@@ -53,7 +53,7 @@ class SiteController {
         try {
 
             //Xử lý nhập dữ liệu:
-            const errors = await mess.showErrorsValidationsToJson(400, req, res, next);
+            const errors = await mess.showValidations(400, req, res, next);
             if (!errors.isEmpty()) {
                 return res.json({
                     data: errors.array(),
@@ -89,7 +89,7 @@ class SiteController {
         try {
 
             //Xử lý nhập dữ liệu:
-            const errors = await mess.showErrorsValidationsToJson(400, req, res, next);
+            const errors = await mess.showValidations(400, req, res, next);
             if (!errors.isEmpty()) {
                 return res.json({
                     data: errors.array(),
