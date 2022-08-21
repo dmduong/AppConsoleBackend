@@ -360,7 +360,8 @@ class InventoryController {
             if (!result) {
                 return res.json({
                     status: 404,
-                    messages: 'No information of unit!'
+                    messages: 'No information of unit!',
+                    data: 0
                 });
             } else {
                 return res.status(200).json({
@@ -480,7 +481,7 @@ class InventoryController {
 
 
     async storeProduct(req, res, next) {
-
+        console.log(req.files);
         try {
             //Xử lý nhập dữ liệu:
             const errors = await mess.showValidations(400, req, res, next);
