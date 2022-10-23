@@ -16,22 +16,20 @@ router.post(
   "/post/store",
   [
     uploadImages.uploadImagesPost.array("imagePost", 12),
-    validate.auth,
     validate.postPostValidation,
   ],
   postController.storePosts
 );
-router.get("/post/getAll", [validate.auth], postController.getAllPosts);
-router.get("/post/:id", [validate.auth], postController.editPost);
+router.get("/post/getAll", postController.getAllPosts);
+router.get("/post/:id", postController.editPost);
 router.put(
   "/post/update/:id",
   [
     uploadImages.uploadImagesPost.array("imagePost", 12),
-    validate.auth,
     validate.updatePostValidation,
   ],
   postController.updatePosts
 );
-router.delete("/post/delete/:id", [validate.auth], postController.deletePost);
+router.delete("/post/delete/:id", postController.deletePost);
 
 module.exports = router;

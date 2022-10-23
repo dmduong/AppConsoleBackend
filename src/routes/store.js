@@ -16,26 +16,20 @@ router.post(
   "/create",
   [
     uploadImages.uploadImageStore.array("imageStore", 12),
-    validate.auth,
     validate.postStoreValidation,
   ],
   storeController.createStore
 );
-router.get(
-  "/getAll/:page/:limit",
-  [validate.auth],
-  storeController.getAllStore
-);
-router.get("/:id", [validate.auth], storeController.editStore);
+router.get("/getAll/:page/:limit", storeController.getAllStore);
+router.get("/:id", storeController.editStore);
 router.put(
   "/update/:id",
   [
-    validate.auth,
     uploadImages.uploadImageStore.array("imageStore", 12),
     validate.updateStoreValidation,
   ],
   storeController.updateStore
 );
-router.delete("/delete/:id", [validate.auth], storeController.deleteStore);
+router.delete("/delete/:id", storeController.deleteStore);
 
 module.exports = router;

@@ -5,6 +5,14 @@ class template {
   async getRequest(req) {
     return await req.body;
   }
+
+  async userGetFromToken(req) {
+    return await req.user;
+  }
+
+  async storeIdGetFromToken(req) {
+    return await req.store;
+  }
 }
 
 module.exports = new template();

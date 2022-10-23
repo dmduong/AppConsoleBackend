@@ -181,6 +181,26 @@ let updateStoreValidation = () => {
   ];
 };
 
+let postSupplierValidation = () => {
+  return [
+    check("codeSupplier", "Code supplier is empty!").not().isEmpty(),
+    check("nameSupplier", "Name supplier is empty!").not().isEmpty(),
+    check("phoneSupplier", "Phone supplier is empty!").not().isEmpty(),
+  ];
+};
+
+let updateSupplierValidation = () => {
+  return [
+    check("nameSupplier", "Name supplier is empty!").not().isEmpty(),
+    check("phoneSupplier", "Phone supplier is empty!").not().isEmpty(),
+    check("statusId", "Status supplier is empty!").not().isEmpty(),
+  ];
+};
+
+let storeOrderValidation = () => {
+  return [check("codeOrder", "Code order is empty!").not().isEmpty()];
+};
+
 module.exports = {
   postCourseValidation,
   postUpdateCourseValidation,
@@ -200,4 +220,7 @@ module.exports = {
   updatePostValidation,
   postStoreValidation,
   updateStoreValidation,
+  postSupplierValidation,
+  updateSupplierValidation,
+  storeOrderValidation,
 };

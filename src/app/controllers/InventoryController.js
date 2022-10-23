@@ -6,6 +6,7 @@ const {
 const mess = require("../../messages/messagesFollowsStatus");
 const upload = require("../middlewares/Auth");
 const Resize = require("../../util/Resize");
+const template = require("../../helpers/template");
 const destination = "/images/products/";
 const multer = require("multer");
 const fs = require("fs");
@@ -16,12 +17,7 @@ class InventoryController {
   async storeCategory(req, res, next) {
     try {
       //Xử lý nhập dữ liệu:
-      const errors = await mess.showErrorsValidationsToJson(
-        400,
-        req,
-        res,
-        next
-      );
+      const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
           data: errors.array(),
@@ -40,6 +36,7 @@ class InventoryController {
         data: category,
       });
     } catch (error) {
+      console.log(error);
       return res.json({
         status: 503,
         messages: "Errors connect server!",
@@ -49,7 +46,13 @@ class InventoryController {
 
   async getAllCategory(req, res, next) {
     try {
-      const result = await Category.find({}).populate("status");
+      let storeId = await template.storeIdGetFromToken(req);
+      let user = await template.userGetFromToken(req);
+
+      const result = await Category.find({ storeId: storeId }).populate([
+        { path: "status", select: "_id codeStatus nameStatus" },
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ]);
       if (!result) {
         return res.json({
           status: 404,
@@ -97,12 +100,7 @@ class InventoryController {
   async updateCategory(req, res, next) {
     try {
       //Xử lý nhập dữ liệu:
-      const errors = await mess.showErrorsValidationsToJson(
-        400,
-        req,
-        res,
-        next
-      );
+      const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
           data: errors.array(),
@@ -207,7 +205,9 @@ class InventoryController {
 
   async getAllStatus(req, res, next) {
     try {
-      const result = await Status.find({});
+      const result = await Status.find({}).populate([
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ]);
       if (!result) {
         return res.json({
           status: 404,
@@ -338,12 +338,7 @@ class InventoryController {
   async storeUnit(req, res, next) {
     try {
       //Xử lý nhập dữ liệu:
-      const errors = await mess.showErrorsValidationsToJson(
-        400,
-        req,
-        res,
-        next
-      );
+      const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
           data: errors.array(),
@@ -371,7 +366,10 @@ class InventoryController {
 
   async getAllUnit(req, res, next) {
     try {
-      const result = await Unit.find({}).populate("status");
+      const result = await Unit.find({}).populate([
+        { path: "status", select: "_id codeStatus nameStatus" },
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ]);
       if (!result) {
         return res.json({
           status: 404,
@@ -543,7 +541,7 @@ class InventoryController {
   async getAllProduct(req, res, next) {
     const page = Math.max(0, req.params.page);
     const limit = req.params.limit;
-
+    console.log(this.storeId);
     try {
       const count = await Products.find({});
       const result = await Products.find({})
@@ -554,7 +552,8 @@ class InventoryController {
         })
         .populate("status")
         .populate("category")
-        .populate("unit");
+        .populate("unit")
+        .populate("storeId");
 
       if (result.length <= 0) {
         return res.json({

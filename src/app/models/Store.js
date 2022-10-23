@@ -63,7 +63,7 @@ StoreSchema.statics.getAllStores = async (page, limit) => {
       .limit(limit)
       .skip(limit * page)
       .sort({
-        codeProduct: "asc",
+        codeStore: "asc",
       })
       .populate({ path: "statusId", select: "_id codeStatus nameStatus" });
 

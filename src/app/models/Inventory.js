@@ -15,6 +15,10 @@ const StatusSchema = new Schema(
       minLength: 1,
       maxLength: 255,
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stores",
+    },
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },
   },
@@ -45,6 +49,10 @@ const CategorySchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Status",
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stores",
+    },
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },
   },
@@ -74,6 +82,10 @@ const UnitSchema = new Schema(
     status: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Status",
+    },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stores",
     },
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },
@@ -136,6 +148,10 @@ const ProductSchema = new Schema(
     status: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Status",
+    },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stores",
     },
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },

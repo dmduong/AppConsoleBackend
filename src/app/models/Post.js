@@ -42,6 +42,10 @@ const PostSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Status",
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stores",
+    },
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },
   },
@@ -79,6 +83,7 @@ PostSchema.statics.getAllInfoPost = async function () {
     const data = await Posts.find({}).populate([
       { path: "userId", select: "_id name email" },
       { path: "statusId", select: "_id codeStatus nameStatus" },
+      { path: "storeId", select: "_id codeStore nameStore" },
     ]);
 
     return data ? data : [];

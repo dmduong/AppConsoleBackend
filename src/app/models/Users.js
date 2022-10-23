@@ -39,6 +39,10 @@ const userSchema = mongoose.Schema({
       },
     },
   ],
+  storeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Stores",
+  },
 });
 
 userSchema.pre("save", async function (next) {
@@ -53,9 +57,13 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.generateAuthToken = async function () {
   // Generate an auth token for the user
   const user = this;
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_ACCESS_KEY, {
-    expiresIn: "365d",
-  });
+  const token = jwt.sign(
+    { _id: user._id, _store: user.storeId },
+    process.env.JWT_ACCESS_KEY,
+    {
+      expiresIn: "365d",
+    }
+  );
   user.tokens = user.tokens.concat({ token });
   await user.save();
   return token;
@@ -65,7 +73,7 @@ userSchema.methods.generateAuthRefreshToken = async function () {
   // Generate an auth token for the user
   const user = this;
   const refreshToken = jwt.sign(
-    { _id: user._id },
+    { _id: user._id, _store: user.storeId },
     process.env.JWT_REFRESH_KEY,
     { expiresIn: "365d" }
   );

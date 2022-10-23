@@ -1,8 +1,10 @@
+const { string } = require("joi");
 const mongoose = require("mongoose");
 const { post } = require("../../routes/post");
+const { OrderDetails } = require("../models/OrderDetail");
 const Schema = mongoose.Schema;
 
-const PostSchema = new Schema(
+const OrderSchema = new Schema(
   {
     codeOrder: {
       type: String,
@@ -11,28 +13,31 @@ const PostSchema = new Schema(
       unique: true,
       uppercase: true,
     },
-    namePost: {
+    titleOrder: {
       type: String,
       minLength: 1,
-      maxLength: 255,
-    },
-    contentPost: {
-      type: String,
-      minLength: 1,
-    },
-    imagePost: [
-      {
-        nameImage: {
-          type: String,
-          default: null,
-        },
-      },
-    ],
-    colorPost: {
-      type: String,
-      minLength: 1,
-      maxLength: 255,
+      maxLength: 500,
       default: null,
+    },
+    totalAmount: {
+      type: Number,
+      default: 0,
+    },
+    paymentAmount: {
+      type: Number,
+      default: 0,
+    },
+    paymentRemain: {
+      type: Number,
+      default: 0,
+    },
+    paymentDate: {
+      type: String,
+      default: Date.now(),
+    },
+    isPayment: {
+      type: Boolean,
+      default: false,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -42,6 +47,10 @@ const PostSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Status",
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stores",
+    },
     createdAt: { type: String, default: Date.now },
     updatedAt: { type: String, default: Date.now },
   },
@@ -49,3 +58,31 @@ const PostSchema = new Schema(
     timestamps: false,
   }
 );
+
+const table = OrderSchema;
+
+table.statics.storeOrder = async (dataFormForOrder, dataFormForDetail) => {
+  try {
+    let dataOrder = new Orders(dataFormForOrder);
+    await dataOrder.save();
+
+    if (!dataOrder) {
+      return false;
+    }
+
+    let inserDetail = await OrderDetails.storeDetail(
+      dataFormForDetail,
+      dataOrder._id
+    );
+
+    // console.log([...inserDetail]);
+    let result = { dataOrder, inserDetail };
+    return result ? result : false;
+  } catch (error) {
+    return console.log(error);
+  }
+};
+
+const Orders = mongoose.model("Orders", OrderSchema);
+
+module.exports = { Orders };
