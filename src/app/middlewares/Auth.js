@@ -9,7 +9,8 @@ const auth = async (req, res, next) => {
       _id: data._id,
       storeId: data._store,
       "tokens.token": token,
-    });
+    }).populate([{ path: "storeId", select: "_id codeStore nameStore imageStore" }]);
+
     if (!user) {
       return res.json({
         status: 403,

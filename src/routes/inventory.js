@@ -18,7 +18,7 @@ router.post(
   [validate.postCategoryValidation],
   inventoryController.storeCategory
 );
-router.get("/category/getAll", inventoryController.getAllCategory);
+router.get("/category/getAll/:page/:limit", inventoryController.getAllCategory);
 router.get("/category/:id", inventoryController.editCategory);
 router.put(
   "/category/update/:id",
@@ -33,7 +33,8 @@ router.post(
   [validate.postStatusValidation],
   inventoryController.storeStatus
 );
-router.get("/status/getAll", inventoryController.getAllStatus);
+router.get("/status/getAll/:page/:limit", inventoryController.getAllStatus);
+router.get("/status/all", inventoryController.allStatus);
 router.get("/status/:id", inventoryController.editStatus);
 router.put(
   "/status/update/:id",
@@ -48,7 +49,7 @@ router.post(
   [validate.postUnitValidation],
   inventoryController.storeUnit
 );
-router.get("/unit/getAll", inventoryController.getAllUnit);
+router.get("/unit/getAll/:page/:limit", inventoryController.getAllUnit);
 router.get("/unit/:id", inventoryController.editUnit);
 router.put(
   "/unit/update/:id",

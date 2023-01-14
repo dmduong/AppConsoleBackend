@@ -84,7 +84,7 @@ userSchema.methods.generateAuthRefreshToken = async function () {
 
 userSchema.statics.findByCredentials = async (email, password) => {
   // Search for a user by email and password.
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).populate([{ path: "storeId", select: "_id codeStore nameStore imageStore" }]);
   if (!user) {
     throw new Error({ messages: "Invalid login credentials" });
   }

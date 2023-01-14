@@ -70,11 +70,12 @@ class MeController {
 
     async info(req, res, next) {
 
-        const { password, ...other } = req.user._doc;
+        const { password,tokens, refreshTokens, ...other } = req.user._doc;
+
         res.json({
             status: 200,
             messages: "Select information successfylly!",
-            data: { ...other }
+            data: {...other}
         });
     }
 

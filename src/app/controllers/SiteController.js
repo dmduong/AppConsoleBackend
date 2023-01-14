@@ -103,7 +103,7 @@ class SiteController {
 
       const token = await user.generateAuthToken();
       const resfreshToken = await user.generateAuthRefreshToken();
-      const { password, ...other } = user._doc; //loai bo thuoc tinh password
+      const { password, tokens, refreshTokens, ...other } = user._doc; //loai bo thuoc tinh password
 
       const cookieOptions = {
         httpOnly: true,

@@ -16,18 +16,20 @@ const { json } = require("body-parser");
 class InventoryController {
   async storeCategory(req, res, next) {
     try {
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
       //Xử lý nhập dữ liệu:
       const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
-          data: errors.array(),
+          error: "Validations errors!",
           status: 400,
-          messages: "Validations errors!",
+          messages: errors.array(),
         });
       }
 
       //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
-      const category = await new Category(req.body);
+      const category = await new Category({ ...req.body, storeId });
       await category.save();
 
       return res.json({
@@ -36,7 +38,6 @@ class InventoryController {
         data: category,
       });
     } catch (error) {
-      console.log(error);
       return res.json({
         status: 503,
         messages: "Errors connect server!",
@@ -48,23 +49,30 @@ class InventoryController {
     try {
       let storeId = await template.storeIdGetFromToken(req);
       let user = await template.userGetFromToken(req);
+      const page = Math.max(0, req.params.page);
+      const limit = req.params.limit;
+      const count = await Category.find({ storeId: storeId });
+      const result = await Category.find({ storeId: storeId })
+        .limit(limit)
+        .skip(limit * page)
+        .sort({ createdAt: "desc" })
+        .populate([
+          { path: "status", select: "_id codeStatus nameStatus" },
+          { path: "storeId", select: "_id codeStore nameStore" },
+        ]);
 
-      const result = await Category.find({ storeId: storeId }).populate([
-        { path: "status", select: "_id codeStatus nameStatus" },
-        { path: "storeId", select: "_id codeStore nameStore" },
-      ]);
-      if (!result) {
-        return res.json({
-          status: 404,
-          messages: "No information of category!",
-        });
-      } else {
-        return res.status(200).json({
-          status: 200,
-          messages: "You have a litle information of category!",
-          data: result,
-        });
-      }
+      return res.status(200).json({
+        status: 200,
+        messages: "You have a litle information of category!",
+        pagination: {
+          page: page,
+          pages: Math.ceil(count.length / limit),
+          limit: limit,
+          total: count.length,
+          dataOfPage: result.length
+        },
+        data: result,
+      });
     } catch (error) {
       res.status.json({
         status: 503,
@@ -75,7 +83,9 @@ class InventoryController {
 
   async editCategory(req, res, next) {
     try {
-      const items = await Category.findById(req.params.id).populate("status");
+      const items = await Category.findById(req.params.id).populate([
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ]);
 
       if (!items) {
         return res.json({
@@ -103,9 +113,9 @@ class InventoryController {
       const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
-          data: errors.array(),
+          data: "Validations errors!",
           status: 400,
-          messages: "Validations errors!",
+          messages: errors.array(),
         });
       }
 
@@ -175,19 +185,21 @@ class InventoryController {
 
   async storeStatus(req, res, next) {
     try {
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
       //Xử lý nhập dữ liệu:
       const errors = await mess.showValidations(400, req, res, next);
 
       if (!errors.isEmpty()) {
         return res.json({
-          data: errors.array(),
+          error: "Validate error !",
           status: 400,
-          messages: "Validations errors!",
+          messages: errors.array(),
         });
       }
 
       //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
-      const status = new Status(req.body);
+      const status = new Status({ ...req.body, storeId });
       await status.save();
 
       return res.json({
@@ -205,10 +217,51 @@ class InventoryController {
 
   async getAllStatus(req, res, next) {
     try {
-      const result = await Status.find({}).populate([
-        { path: "storeId", select: "_id codeStore nameStore" },
-      ]);
+      const page = Math.max(0, req.params.page);
+      const limit = req.params.limit;
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
+      const count = await Status.find({ storeId: storeId });
+      const result = await Status.find({ storeId: storeId })
+        .limit(limit)
+        .skip(limit * page)
+        .sort({ createdAt: "desc" })
+        .populate([{ path: "storeId", select: "_id codeStore nameStore" }]);
       if (!result) {
+        return res.json({
+          status: 404,
+          messages: "No information of status!",
+        });
+      } else {
+        return res.status(200).json({
+          status: 200,
+          messages: "You have a litle information of status!",
+          pagination: {
+            page: page,
+            pages: Math.ceil(count.length / limit),
+            limit: limit,
+            total: count.length,
+            dataOfPage: result.length,
+          },
+          data: result,
+        });
+      }
+    } catch (error) {
+      res.status.json({
+        status: 503,
+        messages: "Errors connect server!",
+      });
+    }
+  }
+
+  async allStatus(req, res, next) {
+    try {
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
+      const result = await Status.find({ storeId: storeId })
+        .sort({ createdAt: "desc" })
+        .populate([{ path: "storeId", select: "_id codeStore nameStore" }]);
+      if (result.length <= 0) {
         return res.json({
           status: 404,
           messages: "No information of status!",
@@ -230,7 +283,9 @@ class InventoryController {
 
   async editStatus(req, res, next) {
     try {
-      const items = await Status.findById(req.params.id);
+      const items = await Status.findById(req.params.id).populate([
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ]);
       if (!items) {
         return res.json({
           status: 404,
@@ -254,17 +309,12 @@ class InventoryController {
   async updateStatus(req, res, next) {
     try {
       //Xử lý nhập dữ liệu:
-      const errors = await mess.showErrorsValidationsToJson(
-        400,
-        req,
-        res,
-        next
-      );
+      const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
-          data: errors.array(),
+          messages: errors.array(),
           status: 400,
-          messages: "Validations errors!",
+          error: "Validations errors!",
         });
       }
 
@@ -337,18 +387,20 @@ class InventoryController {
 
   async storeUnit(req, res, next) {
     try {
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
       //Xử lý nhập dữ liệu:
       const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
-          data: errors.array(),
+          error: "Validations errors!",
           status: 400,
-          messages: "Validations errors!",
+          messages: errors.array(),
         });
       }
 
       //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
-      const unit = await new Unit(req.body);
+      const unit = await new Unit({ ...req.body, storeId: storeId });
       await unit.save();
 
       return res.json({
@@ -366,10 +418,19 @@ class InventoryController {
 
   async getAllUnit(req, res, next) {
     try {
-      const result = await Unit.find({}).populate([
-        { path: "status", select: "_id codeStatus nameStatus" },
-        { path: "storeId", select: "_id codeStore nameStore" },
-      ]);
+      const page = Math.max(0, req.params.page);
+      const limit = req.params.limit;
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
+      const count = await Unit.find({ storeId: storeId });
+      const result = await Unit.find({ storeId: storeId })
+        .limit(limit)
+        .skip(limit * page)
+        .sort({ createdAt: "desc" })
+        .populate([
+          { path: "status", select: "_id codeStatus nameStatus" },
+          { path: "storeId", select: "_id codeStore nameStore" },
+        ]);
       if (!result) {
         return res.json({
           status: 404,
@@ -380,11 +441,18 @@ class InventoryController {
         return res.status(200).json({
           status: 200,
           messages: "You have a litle information of unit!",
+          pagination: {
+            page: page,
+            pages: Math.ceil(count.length / limit),
+            limit: limit,
+            total: count.length,
+            dataOfPage: result.length,
+          },
           data: result,
         });
       }
     } catch (error) {
-      res.status.json({
+      res.status(503).json({
         status: 503,
         messages: "Errors connect server!",
       });
