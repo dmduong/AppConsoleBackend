@@ -461,7 +461,9 @@ class InventoryController {
 
   async editUnit(req, res, next) {
     try {
-      const items = await Unit.findById(req.params.id).populate("status");
+      const items = await Unit.findById(req.params.id).populate([
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ]);
       if (!items) {
         return res.json({
           status: 404,
@@ -485,17 +487,12 @@ class InventoryController {
   async updateUnit(req, res, next) {
     try {
       //Xử lý nhập dữ liệu:
-      const errors = await mess.showErrorsValidationsToJson(
-        400,
-        req,
-        res,
-        next
-      );
+      const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
         return res.json({
-          data: errors.array(),
+          messages: errors.array(),
           status: 400,
-          messages: "Validations errors!",
+          error: "Validations errors!",
         });
       }
 

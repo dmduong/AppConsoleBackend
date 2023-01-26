@@ -86,9 +86,7 @@ table.statics.getAllSupplier = async (store, page, limit) => {
     const result = await Suppliers.find({ storeId: store })
       .limit(limit)
       .skip(limit * page)
-      .sort({
-        codeSupplier: "asc",
-      })
+      .sort({ createdAt: "desc" })
       .populate([
         { path: "statusId", select: "_id codeStatus nameStatus" },
         { path: "storeId", select: "_id codeStore nameStore" },
@@ -99,6 +97,8 @@ table.statics.getAllSupplier = async (store, page, limit) => {
         page: page,
         pages: Math.ceil(count.length / limit),
         limit: limit,
+        total: count.length,
+        dataOfPage: result.length,
       },
       data: result,
     };

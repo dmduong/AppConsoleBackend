@@ -23,9 +23,9 @@ class SupplierController {
     const errors = await mess.showValidations(400, req, res, next);
     if (!errors.isEmpty()) {
       return res.json({
-        data: errors.array(),
+        error: "Validations errors!",
         status: 400,
-        messages: "Validations errors!",
+        messages: errors.array(),
       });
     }
 
