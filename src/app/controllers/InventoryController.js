@@ -69,7 +69,7 @@ class InventoryController {
           pages: Math.ceil(count.length / limit),
           limit: limit,
           total: count.length,
-          dataOfPage: result.length
+          dataOfPage: result.length,
         },
         data: result,
       });
@@ -561,17 +561,17 @@ class InventoryController {
   }
 
   async storeProduct(req, res, next) {
-    console.log(req.files);
     try {
       //Xử lý nhập dữ liệu:
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
       const errors = await mess.showValidations(400, req, res, next);
       if (!errors.isEmpty()) {
-        const info = {
-          data: errors.array(),
+        return res.json({
+          messages: errors.array(),
           status: 400,
-          messages: "Validations errors!",
-        };
-        return res.json(info);
+          error: "Validations errors!",
+        });
       }
 
       // //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
@@ -586,7 +586,11 @@ class InventoryController {
         });
       }
 
-      const products = await new Products({ imageProduct, ...formData });
+      const products = await new Products({
+        storeId,
+        imageProduct,
+        ...formData,
+      });
       await products.save();
 
       return res.json({
@@ -604,21 +608,22 @@ class InventoryController {
   }
 
   async getAllProduct(req, res, next) {
-    const page = Math.max(0, req.params.page);
-    const limit = req.params.limit;
-    console.log(this.storeId);
     try {
-      const count = await Products.find({});
-      const result = await Products.find({})
+      const page = Math.max(0, req.params.page);
+      const limit = req.params.limit;
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
+      const count = await Products.find({ storeId: storeId });
+      const result = await Products.find({ storeId: storeId })
         .limit(limit)
         .skip(limit * page)
-        .sort({
-          codeProduct: "asc",
-        })
-        .populate("status")
-        .populate("category")
-        .populate("unit")
-        .populate("storeId");
+        .sort({ createdAt: "desc" })
+        .populate([
+          { path: "status", select: "_id codeStatus nameStatus" },
+          { path: "storeId", select: "_id codeStore nameStore" },
+          { path: "category", select: "_id codeCategory nameCategory" },
+          { path: "unit", select: "_id codeUnit nameUnit" },
+        ]);
 
       if (result.length <= 0) {
         return res.json({
@@ -633,6 +638,8 @@ class InventoryController {
             page: page,
             pages: Math.ceil(count.length / limit),
             limit: limit,
+            total: count.length,
+            dataOfPage: result.length,
           },
           data: result,
         });
