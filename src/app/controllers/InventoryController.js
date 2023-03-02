@@ -52,6 +52,14 @@ class InventoryController {
       const page = Math.max(0, req.params.page);
       const limit = req.params.limit;
       const count = await Category.find({ storeId: storeId });
+      if (req.params.page == "a" && req.params.limit == "a") {
+        return res.status(200).json({
+          status: 200,
+          messages: "select!",
+          data: count,
+        });
+      }
+
       const result = await Category.find({ storeId: storeId })
         .limit(limit)
         .skip(limit * page)
@@ -423,6 +431,15 @@ class InventoryController {
       let storeId = await template.storeIdGetFromToken(req);
       let getUser = await template.userGetFromToken(req);
       const count = await Unit.find({ storeId: storeId });
+
+      if (req.params.page == "a" && req.params.limit == "a") {
+        return res.status(200).json({
+          status: 200,
+          messages: "select!",
+          data: count,
+        });
+      }
+
       const result = await Unit.find({ storeId: storeId })
         .limit(limit)
         .skip(limit * page)
@@ -561,6 +578,7 @@ class InventoryController {
   }
 
   async storeProduct(req, res, next) {
+    console.log(req.files);
     try {
       //Xử lý nhập dữ liệu:
       let storeId = await template.storeIdGetFromToken(req);
