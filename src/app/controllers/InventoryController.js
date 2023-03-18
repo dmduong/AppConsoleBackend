@@ -7,6 +7,8 @@ const mess = require("../../messages/messagesFollowsStatus");
 const upload = require("../middlewares/Auth");
 const Resize = require("../../util/Resize");
 const template = require("../../helpers/template");
+const utils = require("../../helpers/util");
+const header = require("../../helpers/header");
 const destination = "/images/products/";
 const multer = require("multer");
 const fs = require("fs");
@@ -184,7 +186,7 @@ class InventoryController {
         });
       }
     } catch (error) {
-      res.status.json({
+      res.status(503).json({
         status: 503,
         messages: "Errors connect server!",
       });
@@ -235,15 +237,47 @@ class InventoryController {
         .skip(limit * page)
         .sort({ createdAt: "desc" })
         .populate([{ path: "storeId", select: "_id codeStore nameStore" }]);
-      if (!result) {
+
+      // const result = [];
+      if (!result || result.length === 0) {
+        let header_new = [
+          Array("_id", "_id"),
+          Array("codeStatus", "Mã trạng thái"),
+          Array("nameStatus", "Tên trạng thái"),
+          Array("createdAt", "Ngày tạo"),
+          Array("updatedAt", "Ngày cập nhật"),
+        ];
+        const data_load = new Array([], header_new);
         return res.json({
           status: 404,
-          messages: "No information of status!",
+          messages: "Không có dữ liệu.",
+          data: data_load,
         });
       } else {
+        const dataNew = new Array();
+        let header_new = [
+          Array("_id", "_id"),
+          Array("codeStatus", "Mã trạng thái"),
+          Array("nameStatus", "Tên trạng thái"),
+          Array("createdAt", "Ngày tạo"),
+          Array("updatedAt", "Ngày cập nhật"),
+        ];
+        result.map((value, keys) => {
+          const createdAt = utils.timeToString(value.createdAt);
+          const updatedAt = utils.timeToString(value.updatedAt);
+          dataNew[keys] = Array(
+            Array("_id", value._id),
+            Array("codeStatus", value.codeStatus, "text-success"),
+            Array("nameStatus", value.nameStatus),
+            Array("createdAt", createdAt),
+            Array("updatedAt", updatedAt)
+          );
+        });
+
+        const data_load = new Array(dataNew, header_new);
         return res.status(200).json({
           status: 200,
-          messages: "You have a litle information of status!",
+          messages: "Lấy thông tin thành công.",
           pagination: {
             page: page,
             pages: Math.ceil(count.length / limit),
@@ -251,13 +285,13 @@ class InventoryController {
             total: count.length,
             dataOfPage: result.length,
           },
-          data: result,
+          data: data_load,
         });
       }
     } catch (error) {
-      res.status.json({
+      res.status(503).json({
         status: 503,
-        messages: "Errors connect server!",
+        messages: "Không kết nối đến máy chủ.",
       });
     }
   }
