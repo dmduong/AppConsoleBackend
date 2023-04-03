@@ -262,15 +262,26 @@ class InventoryController {
           Array("createdAt", "Ngày tạo"),
           Array("updatedAt", "Ngày cập nhật"),
         ];
+
+        header_new = [
+          { key: "_id", value: "_id" },
+          { key: "codeStatus", value: "Mã trạng thái" },
+          { key: "nameStatus", value: "Tên trạng thái" },
+          { key: "storeId", value: "Tên cửa hàng" },
+          { key: "createdAt", value: "Ngày tạo" },
+          { key: "updatedAt", value: "Ngày cập nhật" },
+        ];
+        console.log(result);
         result.map((value, keys) => {
           const createdAt = utils.timeToString(value.createdAt);
           const updatedAt = utils.timeToString(value.updatedAt);
           dataNew[keys] = Array(
-            Array("_id", value._id),
-            Array("codeStatus", value.codeStatus, "text-success"),
-            Array("nameStatus", value.nameStatus),
-            Array("createdAt", createdAt),
-            Array("updatedAt", updatedAt)
+            { key: "_id", value: value._id },
+            { key: "codeStatus", value: value.codeStatus },
+            { key: "nameStatus", value: value.nameStatus },
+            { key: "storeId", value: value.storeId.nameStore },
+            { key: "createdAt", value: createdAt },
+            { key: "updatedAt", value: updatedAt }
           );
         });
 

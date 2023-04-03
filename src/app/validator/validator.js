@@ -92,8 +92,8 @@ let updateCategoryValidation = () => {
 
 let postStatusValidation = () => {
   return [
-    check("codeStatus", "Code status is empty!").not().isEmpty(),
-    check("nameStatus", "Name status is empty!").not().isEmpty(),
+    check("codeStatus", "Mã trạng thái không được trống.").not().isEmpty(),
+    check("nameStatus", "Tên trạng thái không được trống.").not().isEmpty(),
   ];
 };
 
