@@ -4,8 +4,9 @@
  */
 
 const mongoose = require("mongoose");
-const { post } = require("../../routes/post");
 const Schema = mongoose.Schema;
+const utils = require("../../helpers/util");
+const { ObjectId } = require("mongodb");
 
 const SupplierSchema = new Schema(
   {
@@ -92,6 +93,36 @@ table.statics.getAllSupplier = async (store, page, limit) => {
         { path: "storeId", select: "_id codeStore nameStore" },
       ]);
 
+    console.log(result);
+    let header_new = [
+      { key: "_id", value: "_id" },
+      { key: "codeSupplier", value: "Mã nhà cung cấp" },
+      { key: "nameSupplier", value: "Tên nhà cung cấp" },
+      { key: "addressSupplier", value: "Địa chỉ" },
+      { key: "phoneSupplier", value: "Số điện thoại" },
+      { key: "nameStatus", value: "Trạng thái" },
+      { key: "storeId", value: "Tên cửa hàng" },
+      { key: "createdAt", value: "Ngày tạo" },
+      { key: "updatedAt", value: "Ngày cập nhật" },
+    ];
+
+    let dataNew = new Array();
+    result.map((value, keys) => {
+      const createdAt = utils.timeToString(value.createdAt);
+      const updatedAt = utils.timeToString(value.updatedAt);
+      dataNew[keys] = Array(
+        { key: "_id", value: value._id },
+        { key: "codeSupplier", value: value.codeSupplier },
+        { key: "nameSupplier", value: value.nameSupplier },
+        { key: "addressSupplier", value: value.addressSupplier },
+        { key: "phoneSupplier", value: value.phoneSupplier },
+        { key: "nameStatus", value: value.statusId.nameStatus },
+        { key: "storeId", value: value.storeId.storeId },
+        { key: "createdAt", value: createdAt },
+        { key: "updatedAt", value: updatedAt }
+      );
+    });
+
     let data = {
       pagination: {
         page: page,
@@ -100,7 +131,7 @@ table.statics.getAllSupplier = async (store, page, limit) => {
         total: count.length,
         dataOfPage: result.length,
       },
-      data: result,
+      data: new Array(dataNew, header_new),
     };
 
     return result ? data : false;

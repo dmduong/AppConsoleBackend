@@ -14,6 +14,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const { json } = require("body-parser");
+const { load, pagination } = require("../../config/mongoDB.js");
 
 class InventoryController {
   async storeCategory(req, res, next) {
@@ -29,9 +30,13 @@ class InventoryController {
           messages: errors.array(),
         });
       }
-
+      const { codeCategory } = req.body;
       //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
-      const category = await new Category({ ...req.body, storeId });
+      const category = await new Category({
+        ...req.body,
+        codeCategory: utils.stringUpperCase(utils.stringUnicode(codeCategory)),
+        storeId,
+      });
       await category.save();
 
       return res.json({
@@ -53,7 +58,30 @@ class InventoryController {
       let user = await template.userGetFromToken(req);
       const page = Math.max(0, req.params.page);
       const limit = req.params.limit;
-      const count = await Category.find({ storeId: storeId });
+      const count = await load("", Category, {
+        storeId: storeId,
+      });
+
+      let select = "";
+      let table = Category;
+      let where = { storeId: storeId };
+      let populate = [
+        { path: "status", select: "_id codeStatus nameStatus" },
+        { path: "storeId", select: "_id codeStore nameStore" },
+      ];
+      let limit1 = limit;
+      let page1 = limit * page;
+      let sort = { createdAt: "desc" };
+      let result = await load(
+        select,
+        table,
+        where,
+        populate,
+        limit1,
+        page1,
+        sort
+      );
+
       if (req.params.page == "a" && req.params.limit == "a") {
         return res.status(200).json({
           status: 200,
@@ -62,31 +90,47 @@ class InventoryController {
         });
       }
 
-      const result = await Category.find({ storeId: storeId })
-        .limit(limit)
-        .skip(limit * page)
-        .sort({ createdAt: "desc" })
-        .populate([
-          { path: "status", select: "_id codeStatus nameStatus" },
-          { path: "storeId", select: "_id codeStore nameStore" },
-        ]);
+      let header_new = [
+        { key: "_id", value: "_id" },
+        { key: "codeCategory", value: "Mã danh mục" },
+        { key: "nameCategory", value: "Tên danh mục" },
+        { key: "detailCategory", value: "Chi tiết danh mục" },
+        { key: "nameStatus", value: "Trạng thái" },
+        { key: "nameStore", value: "Cửa hàng" },
+        { key: "createdAt", value: "Ngày tạo" },
+        { key: "updatedAt", value: "Ngày cập nhật" },
+      ];
 
+      console.log(result);
+      let dataNew = new Array();
+      result.map((value, keys) => {
+        console.log(Object.keys(value));
+        const createdAt = utils.timeToString(value.createdAt);
+        const updatedAt = utils.timeToString(value.updatedAt);
+        dataNew[keys] = Array(
+          { key: "_id", value: value._id },
+          { key: "codeCategory", value: value.codeCategory },
+          { key: "nameCategory", value: value.nameCategory },
+          { key: "detailCategory", value: value.detailCategory },
+          { key: "nameStatus", value: value.status.nameStatus },
+          { key: "nameStore", value: value.storeId.nameStore },
+          { key: "createdAt", value: createdAt },
+          { key: "updatedAt", value: updatedAt }
+        );
+      });
+
+      let valuePagi = await pagination(page, limit, count, result);
       return res.status(200).json({
         status: 200,
-        messages: "You have a litle information of category!",
-        pagination: {
-          page: page,
-          pages: Math.ceil(count.length / limit),
-          limit: limit,
-          total: count.length,
-          dataOfPage: result.length,
-        },
-        data: result,
+        messages: "Lấy thông tin thành công",
+        pagination: valuePagi,
+        data: new Array(dataNew, header_new),
       });
     } catch (error) {
-      res.status.json({
+      res.status(503).json({
         status: 503,
-        messages: "Errors connect server!",
+        messages: "Lấy thông tin không thành công.",
+        err: error,
       });
     }
   }
@@ -312,8 +356,10 @@ class InventoryController {
       let storeId = await template.storeIdGetFromToken(req);
       let getUser = await template.userGetFromToken(req);
       const result = await Status.find({ storeId: storeId })
-        .sort({ createdAt: "desc" })
-        .populate([{ path: "storeId", select: "_id codeStore nameStore" }]);
+        .sort({
+          createdAt: "desc",
+        })
+        .select("_id codeStatus nameStatus");
       if (result.length <= 0) {
         return res.json({
           status: 404,
@@ -500,6 +546,39 @@ class InventoryController {
           data: 0,
         });
       } else {
+        let header_new = [
+          { key: "_id", value: "_id" },
+          { key: "codeUnit", value: "Mã đơn vị" },
+          { key: "nameUnit", value: "Tên đơn vị" },
+          { key: "detailUnit", value: "Chi tiết đơn vị" },
+          { key: "nameStatus", value: "Trạng thái" },
+          { key: "nameStore", value: "Cửa hàng" },
+          { key: "createdAt", value: "Ngày tạo" },
+          { key: "updatedAt", value: "Ngày cập nhật" },
+        ];
+
+        let dataNew = new Array();
+        result.map((value, keys) => {
+          const createdAt = utils.timeToString(value.createdAt);
+          const updatedAt = utils.timeToString(value.updatedAt);
+          dataNew[keys] = Array(
+            { key: "_id", value: value._id },
+            { key: "codeUnit", value: value.codeUnit },
+            { key: "nameUnit", value: value.nameUnit },
+            { key: "detailUnit", value: value.detailUnit },
+            {
+              key: "nameStatus",
+              value: value.status.codeStatus + " - " + value.status.nameStatus,
+            },
+            {
+              key: "nameStore",
+              value: value.storeId.codeStore + " - " + value.storeId.nameStore,
+            },
+            { key: "createdAt", value: createdAt },
+            { key: "updatedAt", value: updatedAt }
+          );
+        });
+
         return res.status(200).json({
           status: 200,
           messages: "You have a litle information of unit!",
@@ -510,7 +589,7 @@ class InventoryController {
             total: count.length,
             dataOfPage: result.length,
           },
-          data: result,
+          data: [dataNew, header_new],
         });
       }
     } catch (error) {

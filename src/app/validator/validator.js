@@ -1,5 +1,12 @@
 // const validate = require('../app/validator/index');
 var { check } = require("express-validator");
+const { Suppliers } = require("../models/Supplier");
+const { Status, Category } = require("../models/Inventory");
+const mongoose = require("mongoose");
+const { stringUpperCase } = require("../../helpers/util");
+const { stringUnicode } = require("../../helpers/util");
+const util = require("../../helpers/util");
+var ObjectId = require("mongodb").ObjectID;
 
 let postCourseValidation = () => {
   return [
@@ -75,30 +82,70 @@ let loginValidation = () => {
 
 let postCategoryValidation = () => {
   return [
-    check("codeCategory", "Code category is empty!").not().isEmpty(),
-    check("nameCategory", "Name category is empty!").not().isEmpty(),
-    check("detailCategory", "Detail category is empty!").not().isEmpty(),
-    check("status", "Please select status!").not().isEmpty(),
+    check("codeCategory", "Mã danh mục không được rỗng.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        const check = await Category.findOne({
+          codeCategory: util.stringUpperCase(util.stringUnicode(value)),
+        });
+        if (check) {
+          return Promise.reject("Mã danh mục đã được sử dụng.");
+        }
+      }),
+    check("nameCategory", "Tên danh mục không được trống.").not().isEmpty(),
+    check("detailCategory", "Chi tiết danh mục không được trống.")
+      .not()
+      .isEmpty(),
+    check("status", "Trạng thái không được trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        const check = await Status.findById(value);
+        if (!check) {
+          return Promise.reject("Trạng thái không tồn tại trong hệ thống.");
+        }
+      }),
   ];
 };
 
 let updateCategoryValidation = () => {
   return [
-    check("nameCategory", "Name category is empty!").not().isEmpty(),
-    check("detailCategory", "Detail category is empty!").not().isEmpty(),
-    check("status", "Please select status!").not().isEmpty(),
+    check("nameCategory", "Tên danh mục không được trống.").not().isEmpty(),
+    check("detailCategory", "Chi tết danh mục không được trống.")
+      .not()
+      .isEmpty(),
+    check("status", "Trạng thái không được trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        const check = await Status.findById(value);
+        if (!check) {
+          return Promise.reject("Trạng thái không tồn tại trong hệ thống.");
+        }
+      }),
   ];
 };
 
 let postStatusValidation = () => {
   return [
-    check("codeStatus", "Mã trạng thái không được trống.").not().isEmpty(),
+    check("codeStatus", "Mã trạng thái không được trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        let check = await Status.findOne({ codeStatus: value });
+        if (check) {
+          return Promise.reject("Mã trạng thái đã tồn tại.");
+        }
+      }),
     check("nameStatus", "Tên trạng thái không được trống.").not().isEmpty(),
   ];
 };
 
 let updateStatusValidation = () => {
-  return [check("nameStatus", "Name status is empty!").not().isEmpty()];
+  return [
+    check("nameStatus", "Tên trạng thái không được trống.").not().isEmpty(),
+  ];
 };
 
 let postUnitValidation = () => {
@@ -119,6 +166,7 @@ let updateUnitValidation = () => {
 };
 
 let postProductValidation = () => {
+  25;
   return [
     check("codeProduct", "CodeProduct is empty!").not().isEmpty(),
     check("nameProduct", "NameProduct is empty!").not().isEmpty(),
@@ -183,17 +231,57 @@ let updateStoreValidation = () => {
 
 let postSupplierValidation = () => {
   return [
-    check("codeSupplier", "Code supplier is empty!").not().isEmpty(),
-    check("nameSupplier", "Name supplier is empty!").not().isEmpty(),
-    check("phoneSupplier", "Phone supplier is empty!").not().isEmpty(),
+    check("codeSupplier", "Mã nhà cung cấp không được để trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        let code = await Suppliers.findOne({
+          codeSupplier: stringUpperCase(stringUnicode(value)),
+        });
+        if (code) {
+          return Promise.reject("Mã nhà cung cấp đã tồn tại.");
+        }
+      }),
+    check("nameSupplier", "Tên nhà cung cấp không được trống.").not().isEmpty(),
+    check("statusId", "Trạng thái nhà cung cấp không được trống.")
+      .not()
+      .isEmpty(),
+    check("phoneSupplier")
+      .not()
+      .isEmpty()
+      .withMessage("Số điện thoại không được để trống.")
+      .custom(async (value) => {
+        let phone = await Suppliers.findOne({
+          phoneSupplier: value,
+        });
+        if (phone) {
+          return Promise.reject("Số điện thoại đã được sử dụng.");
+        }
+      }),
   ];
 };
 
 let updateSupplierValidation = () => {
   return [
-    check("nameSupplier", "Name supplier is empty!").not().isEmpty(),
-    check("phoneSupplier", "Phone supplier is empty!").not().isEmpty(),
-    check("statusId", "Status supplier is empty!").not().isEmpty(),
+    check("nameSupplier", "Tên nhà cung cấp không được trống.").not().isEmpty(),
+    check("phoneSupplier", "Số điện thoại không được trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        let check = await Suppliers.findOne({ phoneSupplier: value });
+        if (check) {
+          return Promise.reject("Số điện thoại đã được sử dụng.");
+        }
+      }),
+    check("statusId", "Trạng thái không được trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        let status = await Status.findById(value);
+        if (!status) {
+          return Promise.reject("Không tồn tại trạng thái trong hệ thống.");
+        }
+      }),
   ];
 };
 

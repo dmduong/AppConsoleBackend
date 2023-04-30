@@ -14,35 +14,36 @@ const path = require("path");
 const { publicDecrypt } = require("crypto");
 const { post } = require("../../routes/post.js");
 const { options } = require("joi");
+const { Status } = require("../models/Inventory.js");
+const { stringUpperCase, stringUnicode } = require("../../helpers/util.js");
 
 class SupplierController {
   async storeSupplier(req, res, next) {
     let getIdStore = await template.storeIdGetFromToken(req);
     let dataForm = await template.getRequest(req);
-
+    let { codeSupplier } = dataForm;
     const errors = await mess.showValidations(400, req, res, next);
     if (!errors.isEmpty()) {
       return res.json({
-        error: "Validations errors!",
+        error: "Lỗi nhập dữ liệu.",
         status: 400,
         messages: errors.array(),
       });
     }
 
-    let data = { ...dataForm, storeId: getIdStore };
-
+    let codeUper = stringUpperCase(stringUnicode(codeSupplier));
+    let data = { ...dataForm, storeId: getIdStore, codeSupplier: codeUper };
     let result = await Suppliers.createSupplier(data);
-
     if (result) {
       return await template.showJson(res, 200, {
         status: 200,
-        messages: "Create success!",
+        messages: "Thực hiện thêm mới thành công.",
         data: result,
       });
     } else {
       return await template.showJson(res, 404, {
         status: 404,
-        messages: "Create unsuccess!",
+        messages: "Thực hiện thêm mới không thành công.",
       });
     }
   }
@@ -53,17 +54,45 @@ class SupplierController {
     const limit = req.params.limit;
 
     let data = await Suppliers.getAllSupplier(getIdStore, page, limit);
-
     if (data) {
       return await template.showJson(res, 200, {
         status: 200,
-        messages: "Get supplier success!",
+        messages: "Lấy thông tin thành công.",
         data: data,
       });
     } else {
       return await template.showJson(res, 404, {
         status: 404,
-        messages: "Get supplier unsuccess!",
+        messages: "Lấy thông tin không thành công.",
+      });
+    }
+  }
+
+  async getStatus(req, res, next) {
+    try {
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
+      const result = await Status.find({ storeId: storeId })
+        .sort({
+          createdAt: "desc",
+        })
+        .select("_id codeStatus nameStatus");
+      if (result.length <= 0) {
+        return res.json({
+          status: 404,
+          messages: "No information of status!",
+        });
+      } else {
+        return res.status(200).json({
+          status: 200,
+          messages: "You have a litle information of status!",
+          data: result,
+        });
+      }
+    } catch (error) {
+      res.status.json({
+        status: 503,
+        messages: "Errors connect server!",
       });
     }
   }

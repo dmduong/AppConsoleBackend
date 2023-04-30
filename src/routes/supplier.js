@@ -16,6 +16,7 @@ router.post(
   controller.storeSupplier
 );
 router.get("/getAll/:page/:limit", controller.getAllSupplier);
+router.get("/getStatus", controller.getStatus);
 router.get("/:id", controller.editSupplier);
 router.put(
   "/update/:id",
