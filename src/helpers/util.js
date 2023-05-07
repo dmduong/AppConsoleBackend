@@ -55,6 +55,20 @@ class Utils {
     );
     return str;
   }
+
+  emptyArray (arr) {
+    let count = arr.length;
+    if (count == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  addErrors (arr) {
+    let arrs = [...arr];
+    return arrs;
+  }
 }
 
 module.exports = new Utils();

@@ -27,4 +27,5 @@ module.exports = {
   postSupplierValidation: validation.postSupplierValidation(),
   updateSupplierValidation: validation.updateSupplierValidation(),
   storeOrderValidation: validation.storeOrderValidation(),
+  updateOrderValidation: validation.updateOrderValidation()
 };

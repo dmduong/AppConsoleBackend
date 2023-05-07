@@ -11,5 +11,11 @@ const uploadImages = require("../app/middlewares/UploadImages");
 const controller = require("../app/controllers/OrderController");
 
 router.post("/store", [validate.storeOrderValidation], controller.storeOrder);
+router.get("/getAll/:page/:limit", [], controller.getOrder);
+router.get("/detail/:id", [], controller.orderDetail);
+router.get("/getInforOrder/:id", [], controller.getInforOrder);
+router.put("/update/:id", [validate.updateOrderValidation], controller.updateOrder);
+router.delete("/delete/:id", [validate.updateOrderValidation], controller.deleteOrder);
+router.patch("/payment", [], controller.payment);
 
 module.exports = router;

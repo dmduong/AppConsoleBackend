@@ -1,7 +1,7 @@
 const { string } = require("joi");
 const mongoose = require("mongoose");
-const { post } = require("../../routes/post");
 const { OrderDetails } = require("../models/OrderDetail");
+const { load, deleteOne } = require("../../config/mongoDB");
 const Schema = mongoose.Schema;
 
 const OrderSchema = new Schema(
@@ -82,6 +82,29 @@ table.statics.storeOrder = async (dataFormForOrder, dataFormForDetail) => {
     return console.log(error);
   }
 };
+
+table.statics.getInfoById = async (idOrder) => {
+  let fields = "";
+  let populate = [
+    { path: 'userId', select: "name"},
+    { path: 'storeId', select: "codeStore nameStore"},
+    { path: 'statusId', select: "codeStatus nameStatus"},
+  ];
+  let where = { _id : idOrder};
+  let data = await load(fields, Orders, where, populate);
+  return data;
+};
+
+table.statics.deleteOneOrder = async (id) => {
+  try {
+    let where = {_id: id};
+    let table = Orders;
+    let result = await deleteOne(where, table);
+    return result;
+  } catch (error) {
+    return false;
+  }
+}
 
 const Orders = mongoose.model("Orders", OrderSchema);
 

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/Users.js");
+const template = require("../../helpers/template.js");
 
 const auth = async (req, res, next) => {
   try {
@@ -14,7 +15,7 @@ const auth = async (req, res, next) => {
     if (!user) {
       return res.json({
         status: 403,
-        messages: "Token is not valid!",
+        messages: "Token không tồn tại",
       });
     } else {
       req.user = user;
@@ -25,7 +26,7 @@ const auth = async (req, res, next) => {
   } catch (error) {
     res.json({
       status: 401,
-      messages: "Not authorized to access this resource!",
+      messages: "Không thể kết nối đến máy chủ!",
     });
   }
 };

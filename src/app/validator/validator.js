@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const { stringUpperCase } = require("../../helpers/util");
 const { stringUnicode } = require("../../helpers/util");
 const util = require("../../helpers/util");
+const { Orders } = require("../models/Order");
 var ObjectId = require("mongodb").ObjectID;
 
 let postCourseValidation = () => {
@@ -286,8 +287,28 @@ let updateSupplierValidation = () => {
 };
 
 let storeOrderValidation = () => {
-  return [check("codeOrder", "Code order is empty!").not().isEmpty()];
+  return [check("codeOrder", "Mã hóa đơn không được trống.").not().isEmpty().custom(async (value) => {
+    let check = await Orders.findOne({codeOrder : value});
+    if (check) {
+      return Promise.reject("Mã hóa đơn đã tồn tại.");
+    }
+  })];
 };
+
+let updateOrderValidation = () => {
+  return [
+    check("titleOrder", "Chi tiết đơn hàng không được trống.").not().isEmpty(),
+    check("statusId", "Trạng thái không được trống.")
+      .not()
+      .isEmpty()
+      .custom(async (value) => {
+        let status = await Status.findById(value);
+        if (!status) {
+          return Promise.reject("Không tồn tại trạng thái trong hệ thống.");
+        }
+      }),
+  ];
+}
 
 module.exports = {
   postCourseValidation,
@@ -311,4 +332,5 @@ module.exports = {
   postSupplierValidation,
   updateSupplierValidation,
   storeOrderValidation,
+  updateOrderValidation,
 };

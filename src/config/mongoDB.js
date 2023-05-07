@@ -29,6 +29,43 @@ class mongooes {
 
     return data;
   }
+
+  async insert (data, table) {
+    if (table) {
+      const status = await table(data);
+      status.save();
+      return status;
+    } else {
+      return false;
+    }
+  }
+
+  async deleteOne (where, table) {
+    try {
+      if (table) {
+        const items = await table.deleteOne(where);
+        if (items) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async updateOne (fields, table, where) {
+    if (table) {
+      const field = {...fields, updatedAt: Date.now()};
+      const items = await table.updateOne(where,field);
+      if (items) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
 }
 
 module.exports = new mongooes();

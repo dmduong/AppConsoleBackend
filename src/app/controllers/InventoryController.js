@@ -14,7 +14,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const { json } = require("body-parser");
-const { load, pagination } = require("../../config/mongoDB.js");
+const { load, pagination, insert, deleteOne } = require("../../config/mongoDB.js");
 
 class InventoryController {
   async storeCategory(req, res, next) {
@@ -101,10 +101,8 @@ class InventoryController {
         { key: "updatedAt", value: "Ngày cập nhật" },
       ];
 
-      console.log(result);
       let dataNew = new Array();
       result.map((value, keys) => {
-        console.log(Object.keys(value));
         const createdAt = utils.timeToString(value.createdAt);
         const updatedAt = utils.timeToString(value.updatedAt);
         dataNew[keys] = Array(
@@ -253,18 +251,17 @@ class InventoryController {
       }
 
       //Nếu không có lỗi nhập dữ liệu thì lưu dữ lệu lại.
-      const status = new Status({ ...req.body, storeId });
-      await status.save();
+      const data = await insert({ ...req.body, storeId }, Status);
 
       return res.json({
         status: 200,
-        messages: "Create success!",
-        data: status,
+        messages: "Thêm dữ liệu thành công.",
+        data: data,
       });
     } catch (error) {
       return res.json({
         status: 503,
-        messages: "Errors connect server!",
+        messages: "Không thể kết nối đến máy chủ.",
       });
     }
   }
@@ -458,28 +455,29 @@ class InventoryController {
           { status: req.params.id },
           { status: null }
         );
-        const items = await Status.deleteOne({ _id: req.params.id });
-        if (!items) {
+
+        const data = await deleteOne({ _id: req.params.id }, Status);
+        if (!data) {
           return res.json({
             status: 404,
-            messages: "Delete status uncussesfully!",
+            messages: "Xóa không thành công.",
           });
         } else {
           return res.json({
             status: 200,
-            messages: "Delete status cussesfully!",
+            messages: "Xóa thành công.",
           });
         }
       } else {
         return res.json({
           status: 404,
-          messages: "Delete status uncussesfully!",
+          messages: "Xóa không thành công.",
         });
       }
     } catch (error) {
       res.json({
         status: 503,
-        messages: "Delete status uncussesfully!",
+        messages: "Không thể kết nối đến máy chủ.",
       });
     }
   }
