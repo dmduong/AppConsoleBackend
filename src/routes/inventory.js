@@ -18,6 +18,7 @@ router.post(
   [validate.postCategoryValidation],
   inventoryController.storeCategory
 );
+router.get("/category/getListCategory", inventoryController.getListCategory);
 router.get("/category/getAll/:page/:limit", inventoryController.getAllCategory);
 router.get("/category/:id", inventoryController.editCategory);
 router.put(
@@ -33,8 +34,8 @@ router.post(
   [validate.postStatusValidation],
   inventoryController.storeStatus
 );
-router.get("/status/getAll/:page/:limit", inventoryController.getAllStatus);
 router.get("/status/all", inventoryController.allStatus);
+router.get("/status/getAll/:page/:limit", inventoryController.getAllStatus);
 router.get("/status/:id", inventoryController.editStatus);
 router.put(
   "/status/update/:id",

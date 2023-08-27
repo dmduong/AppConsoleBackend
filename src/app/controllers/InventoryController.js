@@ -13,8 +13,13 @@ const destination = "/images/products/";
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-const { json } = require("body-parser");
-const { load, pagination, insert, deleteOne } = require("../../config/mongoDB.js");
+const {
+  load,
+  pagination,
+  insert,
+  deleteOne,
+} = require("../../config/mongoDB.js");
+const json = require("../../helpers/json.js");
 
 class InventoryController {
   async storeCategory(req, res, next) {
@@ -105,13 +110,20 @@ class InventoryController {
       result.map((value, keys) => {
         const createdAt = utils.timeToString(value.createdAt);
         const updatedAt = utils.timeToString(value.updatedAt);
+        console.log(value.status);
         dataNew[keys] = Array(
           { key: "_id", value: value._id },
           { key: "codeCategory", value: value.codeCategory },
           { key: "nameCategory", value: value.nameCategory },
           { key: "detailCategory", value: value.detailCategory },
-          { key: "nameStatus", value: value.status.nameStatus },
-          { key: "nameStore", value: value.storeId.nameStore },
+          {
+            key: "nameStatus",
+            value: value.status ? value.status.nameStatus : "",
+          },
+          {
+            key: "nameStore",
+            value: value.storeId ? value.storeId.nameStore : "",
+          },
           { key: "createdAt", value: createdAt },
           { key: "updatedAt", value: updatedAt }
         );
@@ -125,6 +137,7 @@ class InventoryController {
         data: new Array(dataNew, header_new),
       });
     } catch (error) {
+      console.log(error);
       res.status(503).json({
         status: 503,
         messages: "Lấy thông tin không thành công.",
@@ -142,19 +155,19 @@ class InventoryController {
       if (!items) {
         return res.json({
           status: 404,
-          messgaes: "No information of category!",
+          messgaes: "Lấy thông tin không thành công.",
         });
       } else {
         return res.json({
           status: 200,
-          messages: "Get information successfull !",
+          messages: "Lấy thông tin thành công.",
           data: items,
         });
       }
     } catch (error) {
-      res.status.json({
+      res.status(503).json({
         status: 503,
-        messages: "Errors connect server!",
+        messages: "Không thể kết nối đến máy chủ.",
       });
     }
   }
@@ -180,12 +193,12 @@ class InventoryController {
         if (!items) {
           return res.json({
             status: 404,
-            messages: "Update category uncessesfully!",
+            messages: "Cập nhật thông tin không thành công.",
           });
         } else {
           return res.json({
             status: 200,
-            messages: "Update category cessesfully!",
+            messages: "Cập nhật thông tin thành công.",
             infor: items,
             data: await Category.findById(req.params.id).populate("status"),
           });
@@ -193,13 +206,13 @@ class InventoryController {
       } else {
         return res.json({
           status: 404,
-          messages: "Update category uncessesfully!",
+          messages: "Cập nhật không thành công!",
         });
       }
     } catch (error) {
       res.json({
         status: 503,
-        messages: "Update category uncessesfully!",
+        messages: "Cập nhật không thành công.",
       });
     }
   }
@@ -209,7 +222,6 @@ class InventoryController {
       const categoryUpdate = await Category.findOne({ _id: req.params.id });
       if (categoryUpdate) {
         const items = await Category.deleteOne({ _id: req.params.id });
-
         if (!items) {
           return res.json({
             status: 404,
@@ -231,6 +243,31 @@ class InventoryController {
       res.status(503).json({
         status: 503,
         messages: "Errors connect server!",
+      });
+    }
+  }
+
+  async getListCategory(req, res, next) {
+    try {
+      let storeId = await template.storeIdGetFromToken(req);
+      let getUser = await template.userGetFromToken(req);
+      let data = await Category.getDsCategory(storeId);
+      if (!utils.emptyArray(data)) {
+        return res.json({
+          status: 200,
+          messages: "Lấu thông tin thành công.",
+          data: data,
+        });
+      } else {
+        return res.json({
+          status: 400,
+          messages: "Lấu thông tin không thành công.",
+        });
+      }
+    } catch (error) {
+      return res.json({
+        status: 400,
+        messages: "Lấy thông tin không thành công.",
       });
     }
   }
@@ -451,6 +488,7 @@ class InventoryController {
     try {
       const statusDelete = await Status.findOne({ _id: req.params.id });
       if (statusDelete) {
+        const checkDelete = await Category.CheckTonTaiTrangThai(id);
         const category = await Category.updateMany(
           { status: req.params.id },
           { status: null }
@@ -566,11 +604,11 @@ class InventoryController {
             { key: "detailUnit", value: value.detailUnit },
             {
               key: "nameStatus",
-              value: value.status.codeStatus + " - " + value.status.nameStatus,
+              value: value.status ? value.status.nameStatus : "",
             },
             {
               key: "nameStore",
-              value: value.storeId.codeStore + " - " + value.storeId.nameStore,
+              value: value.storeId ? value.storeId.nameStore : "",
             },
             { key: "createdAt", value: createdAt },
             { key: "updatedAt", value: updatedAt }
@@ -593,7 +631,7 @@ class InventoryController {
     } catch (error) {
       res.status(503).json({
         status: 503,
-        messages: "Errors connect server!",
+        messages: "Lỗi",
       });
     }
   }
@@ -768,12 +806,71 @@ class InventoryController {
       if (result.length <= 0) {
         return res.json({
           status: 404,
-          messages: "No information of products!",
+          messages: "Không có dữ liệu.",
         });
       } else {
+        let header_new = [
+          { key: "_id", value: "_id" },
+          { key: "codeProduct", value: "Mã sản phẩm" },
+          { key: "nameProduct", value: "Tên sản phẩm" },
+          { key: "amountProduct", value: "Số lượng" },
+          { key: "detailProduct", value: "Chi tiết" },
+          { key: "imageProduct", value: "Hình ảnh" },
+          { key: "priceProduct", value: "Giá góc" },
+          { key: "priceSellProduct", value: "Giá bán" },
+          { key: "weightProduct", value: "Khối lượng" },
+          { key: "category", value: "Danh mục" },
+          { key: "unit", value: "Đơn vị tính" },
+          { key: "status", value: "Trạng thái" },
+          { key: "storeId", value: "Cửa hàng" },
+          { key: "createdAt", value: "Ngày tạo" },
+          { key: "updatedAt", value: "Ngày cập nhật" },
+        ];
+
+        let dataNew = new Array();
+        result.map((value, keys) => {
+          const createdAt = utils.timeToString(value.createdAt);
+          const updatedAt = utils.timeToString(value.updatedAt);
+          dataNew[keys] = Array(
+            { key: "_id", value: value._id },
+            { key: "codeProduct", value: value.codeProduct },
+            { key: "nameProduct", value: value.nameProduct },
+            { key: "amountProduct", value: value.amountProduct },
+            { key: "detailProduct", value: value.detailProduct },
+            {
+              key: "imageProduct",
+              value: value.imageProduct ? value.imageProduct : "",
+            },
+            {
+              key: "priceProduct",
+              value: utils.formatMoney(value.priceProduct, 0),
+            },
+            {
+              key: "priceSellProduct",
+              value: utils.formatMoney(value.priceSellProduct, 0),
+            },
+            { key: "weightProduct", value: value.weightProduct },
+            {
+              key: "category",
+              value: value.category ? value.category.nameCategory : "",
+            },
+            { key: "unit", value: value.unit ? value.unit.nameUnit : "" },
+            {
+              key: "status",
+              value: value.status ? value.status.nameStatus : "",
+            },
+            {
+              key: "storeId",
+              value: value.storeId ? value.storeId.nameStore : "",
+            },
+            { key: "createdAt", value: createdAt },
+            { key: "updatedAt", value: updatedAt }
+          );
+        });
+
         return res.status(200).json({
           status: 200,
-          messages: "You have a litle information of products!",
+          messages: "Lấy thông tin thành công.",
           pagination: {
             page: page,
             pages: Math.ceil(count.length / limit),
@@ -781,7 +878,7 @@ class InventoryController {
             total: count.length,
             dataOfPage: result.length,
           },
-          data: result,
+          data: [dataNew, header_new],
         });
       }
     } catch (error) {

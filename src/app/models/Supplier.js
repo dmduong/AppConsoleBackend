@@ -116,8 +116,11 @@ table.statics.getAllSupplier = async (store, page, limit) => {
         { key: "nameSupplier", value: value.nameSupplier },
         { key: "addressSupplier", value: value.addressSupplier },
         { key: "phoneSupplier", value: value.phoneSupplier },
-        { key: "nameStatus", value: value.statusId.nameStatus },
-        { key: "storeId", value: value.storeId.nameStore },
+        {
+          key: "nameStatus",
+          value: value.statusId ? value.statusId.nameStatus : "",
+        },
+        { key: "storeId", value: value.storeId ? value.storeId.nameStore : "" },
         { key: "createdAt", value: createdAt },
         { key: "updatedAt", value: updatedAt }
       );

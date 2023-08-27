@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { load } = require("../../config/mongoDB");
 
 const Schema = mongoose.Schema;
 
@@ -160,6 +161,14 @@ const ProductSchema = new Schema(
     timestamps: false,
   }
 );
+let table = CategorySchema;
+table.statics.getDsCategory = async (storeId) => {
+  let feilds = "_id codeCategory nameCategory";
+  let table = Category;
+  let where = {storeId: storeId};
+  let data = await load(feilds,table, where);
+  return data;
+}
 
 const Category = mongoose.model("Category", CategorySchema);
 const Status = mongoose.model("Status", StatusSchema);

@@ -1,19 +1,65 @@
+const { number } = require("joi");
+const { Int32 } = require("mongodb");
+
 class Utils {
   timeToString(dateTime) {
     var date = new Date(Number(dateTime));
+    let days = this.checkNumber(date.getDate());
+    let seconds = this.checkNumber(date.getSeconds());
+    let month = this.checkNumber(date.getMonth() + 1);
+    let year = this.checkNumber(date.getFullYear());
+    let hours = this.checkNumber(date.getHours());
+    let minutes = this.checkNumber(date.getMinutes());
     return (
-      date.getDate() +
+      days +
       "/" +
-      (date.getMonth() + 1) +
+      month +
       "/" +
-      date.getFullYear() +
+      year +
       " " +
-      date.getHours() +
+      hours +
       ":" +
-      date.getMinutes() +
+      minutes +
       ":" +
-      date.getSeconds()
+      seconds
     );
+  }
+
+  formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+    try {
+      decimalCount = Math.abs(decimalCount);
+      decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+      const negativeSign = amount < 0 ? "-" : "";
+
+      let i = parseInt(
+        (amount = Math.abs(Number(amount) || 0).toFixed(decimalCount))
+      ).toString();
+      let j = i.length > 3 ? i.length % 3 : 0;
+
+      return (
+        negativeSign +
+        (j ? i.substr(0, j) + thousands : "") +
+        i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) +
+        (decimalCount
+          ? decimal +
+            Math.abs(amount - i)
+              .toFixed(decimalCount)
+              .slice(2)
+          : "")
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  checkNumber(number) {
+    if (number < 10) {
+      let number_new = "0" + Int32(number);
+      return number_new;
+    } else {
+      return number;
+    }
   }
 
   stringUpperCase(string) {
@@ -56,7 +102,7 @@ class Utils {
     return str;
   }
 
-  emptyArray (arr) {
+  emptyArray(arr) {
     let count = arr.length;
     if (count == 0) {
       return true;
@@ -65,7 +111,7 @@ class Utils {
     }
   }
 
-  addErrors (arr) {
+  addErrors(arr) {
     let arrs = [...arr];
     return arrs;
   }
